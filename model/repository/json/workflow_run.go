@@ -80,6 +80,10 @@ func (r *jsonWorkflowRunRepository) CreateWorkflowRun(workflowRun model.Workflow
 	return workflowRun, nil
 }
 
+func (r *jsonWorkflowRunRepository) GetAllWorkflowRuns() ([]model.WorkflowRun, error) {
+	return r.readCurrent()
+}
+
 func (r *jsonWorkflowRunRepository) GetWorkflowRunByID(id string) (model.WorkflowRun, error) {
 	workflowRuns, err := r.readCurrent()
 	if err != nil {
@@ -112,7 +116,7 @@ func (r *jsonWorkflowRunRepository) GetWorkflowRunsByWorkflowID(workflowID strin
 	return result, nil
 }
 
-func (r *jsonWorkflowRunRepository) GetWorkflowRunsBefore(workflowID string, before time.Time) ([]model.WorkflowRun, error) {
+func (r *jsonWorkflowRunRepository) GetWorkflowRunsAfter(workflowID string, after time.Time) ([]model.WorkflowRun, error) {
 	workflowRuns, err := r.readCurrent()
 	if err != nil {
 		return nil, err
@@ -120,7 +124,7 @@ func (r *jsonWorkflowRunRepository) GetWorkflowRunsBefore(workflowID string, bef
 
 	var result []model.WorkflowRun
 	for _, wr := range workflowRuns {
-		if wr.WorkflowID == workflowID && wr.EndTime.Before(before) {
+		if wr.WorkflowID == workflowID && wr.StartTime.After(after) {
 			result = append(result, wr)
 		}
 	}

@@ -82,6 +82,10 @@ func (r *jsonWorkflowRepository) CreateWorkflow(workflow model.Workflow) (model.
 	return workflow, nil
 }
 
+func (r *jsonWorkflowRepository) GetAllWorkflows() ([]model.Workflow, error) {
+	return r.readCurrent()
+}
+
 func (r *jsonWorkflowRepository) GetWorkflowByID(id string) (model.Workflow, error) {
 	workflows, err := r.readCurrent()
 	if err != nil {
