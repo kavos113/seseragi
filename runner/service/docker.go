@@ -1,10 +1,13 @@
-package main
+package service
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"slices"
 
+	"github.com/moby/moby/api/pkg/stdcopy"
 	"github.com/moby/moby/api/types/container"
 	"github.com/moby/moby/client"
 )
@@ -51,6 +54,27 @@ func (dc *DockerClient) RunContainer(image string) error {
 
 	dc.running = append(dc.running, resp.ID)
 
+	logsOptions := client.ContainerLogsOptions{
+		ShowStdout: true,
+		ShowStderr: true,
+		Follow:     true,
+	}
+	stream, err := dc.client.ContainerLogs(ctx, resp.ID, logsOptions)
+	if err != nil {
+		return err
+	}
+	defer stream.Close()
+
+	var stdoutBuf, stderrBuf bytes.Buffer
+	go func() {
+		_, err := stdcopy.StdCopy(&stdoutBuf, &stderrBuf, stream)
+		if err != nil {
+			return
+		}
+
+		fmt.Printf("Container %s logs:\nSTDOUT:\n%s\nSTDERR:\n%s\n", resp.ID, stdoutBuf.String(), stderrBuf.String())
+	}()
+
 	select {
 	case err := <-waitResp.Error:
 		if err != nil {
@@ -60,6 +84,13 @@ func (dc *DockerClient) RunContainer(image string) error {
 	case status := <-waitResp.Result:
 		if status.StatusCode != 0 {
 			return errors.New("container exited with non-zero status")
+		}
+
+		removeOptions := client.ContainerRemoveOptions{
+			Force: true,
+		}
+		if _, err := dc.client.ContainerRemove(ctx, resp.ID, removeOptions); err != nil {
+			return err
 		}
 		dc.running = slices.DeleteFunc(dc.running, func(id string) bool {
 			return id == resp.ID

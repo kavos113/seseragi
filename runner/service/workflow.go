@@ -1,4 +1,4 @@
-package main
+package service
 
 import (
 	"time"
@@ -10,6 +10,7 @@ import (
 type WorkflowRunner struct {
 	workflowRepo    model.WorkflowRepository
 	workflowRunRepo model.WorkflowRunRepository
+	taskRepo        model.TaskRepository
 }
 
 func NewWorkflowRunner() *WorkflowRunner {
@@ -17,6 +18,7 @@ func NewWorkflowRunner() *WorkflowRunner {
 	return &WorkflowRunner{
 		workflowRepo:    json.NewJSONWorkflowRepository(jsonRepo),
 		workflowRunRepo: json.NewJSONWorkflowRunRepository(jsonRepo),
+		taskRepo:        json.NewJSONTaskRepository(jsonRepo),
 	}
 }
 
@@ -48,4 +50,12 @@ func (wr *WorkflowRunner) GetWorkflowToRun() ([]model.Workflow, error) {
 func (wr *WorkflowRunner) SaveWorkflowRun(run model.WorkflowRun) error {
 	_, err := wr.workflowRunRepo.CreateWorkflowRun(run)
 	return err
+}
+
+func (wr *WorkflowRunner) GetImageNameByTaskID(taskID string) (string, error) {
+	task, err := wr.taskRepo.GetTaskByID(taskID)
+	if err != nil {
+		return "", err
+	}
+	return task.ImageName, nil
 }

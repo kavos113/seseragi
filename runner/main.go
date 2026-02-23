@@ -6,15 +6,16 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kavos113/seseragi/model"
+	"github.com/kavos113/seseragi/runner/service"
 )
 
 func main() {
-	dc, err := NewDockerClient()
+	dc, err := service.NewDockerClient()
 	if err != nil {
 		panic(err)
 	}
 
-	wr := NewWorkflowRunner()
+	wr := service.NewWorkflowRunner()
 
 	workflows, err := wr.GetWorkflowToRun()
 	if err != nil {
@@ -24,9 +25,14 @@ func main() {
 	for _, workflow := range workflows {
 		start := time.Now()
 		fmt.Printf("Running workflow: %s\n", workflow.Name)
-		
+
 		for _, node := range workflow.Nodes {
-			if err := dc.RunContainer(node.TaskID); err != nil {
+			imageName, err := wr.GetImageNameByTaskID(node.TaskID)
+			if err != nil {
+				panic(err)
+			}
+
+			if err := dc.RunContainer(imageName); err != nil {
 				panic(err)
 			}
 		}
