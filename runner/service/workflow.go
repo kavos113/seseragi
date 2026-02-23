@@ -47,6 +47,10 @@ func (wr *WorkflowRunner) GetWorkflowToRun() ([]model.Workflow, error) {
 	return toRun, nil
 }
 
+func (wr *WorkflowRunner) GetWorkflowByID(id string) (model.Workflow, error) {
+	return wr.workflowRepo.GetWorkflowByID(id)
+}
+
 func (wr *WorkflowRunner) SaveWorkflowRun(run model.WorkflowRun) error {
 	_, err := wr.workflowRunRepo.CreateWorkflowRun(run)
 	return err
