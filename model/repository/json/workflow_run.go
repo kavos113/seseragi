@@ -15,9 +15,14 @@ type jsonWorkflowRunRepository struct {
 }
 
 func NewJSONWorkflowRunRepository(repo *JsonRepository) model.WorkflowRunRepository {
+	path := filepath.Join(repo.RootDir, "workflow_runs.json")
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		os.WriteFile(path, []byte("[]"), 0644)
+	}	
+
 	return &jsonWorkflowRunRepository{
 		config:   *repo,
-		fileName: filepath.Join(repo.RootDir, "workflow_runs.json"),
+		fileName: path,
 	}
 }
 
@@ -26,10 +31,13 @@ func (r *jsonWorkflowRunRepository) CreateWorkflowRun(workflowRun model.Workflow
 	if err != nil {
 		return model.WorkflowRun{}, err
 	}
-	defer f.Close()
 
 	var workflowRuns []model.WorkflowRun
 	err = json.NewDecoder(f).Decode(&workflowRuns)
+	if err != nil {
+		return model.WorkflowRun{}, err
+	}
+	err = f.Close()
 	if err != nil {
 		return model.WorkflowRun{}, err
 	}
@@ -60,10 +68,13 @@ func (r *jsonWorkflowRunRepository) GetWorkflowRunByID(id string) (model.Workflo
 	if err != nil {
 		return model.WorkflowRun{}, err
 	}
-	defer f.Close()
 
 	var workflowRuns []model.WorkflowRun
 	err = json.NewDecoder(f).Decode(&workflowRuns)
+	if err != nil {
+		return model.WorkflowRun{}, err
+	}
+	err = f.Close()
 	if err != nil {
 		return model.WorkflowRun{}, err
 	}

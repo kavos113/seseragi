@@ -15,9 +15,14 @@ type jsonWorkflowRepository struct {
 }
 
 func NewJSONWorkflowRepository(repo *JsonRepository) model.WorkflowRepository {
+	path := filepath.Join(repo.RootDir, "workflows.json")
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		os.WriteFile(path, []byte("[]"), 0644)
+	}
+
 	return &jsonWorkflowRepository{
 		config:   *repo,
-		fileName: filepath.Join(repo.RootDir, "workflows.json"),
+		fileName: path,
 	}
 }
 
@@ -26,10 +31,13 @@ func (r *jsonWorkflowRepository) CreateWorkflow(workflow model.Workflow) (model.
 	if err != nil {
 		return model.Workflow{}, err
 	}
-	defer f.Close()
 
 	var workflows []model.Workflow
 	err = json.NewDecoder(f).Decode(&workflows)
+	if err != nil {
+		return model.Workflow{}, err
+	}
+	err = f.Close()
 	if err != nil {
 		return model.Workflow{}, err
 	}
@@ -60,10 +68,13 @@ func (r *jsonWorkflowRepository) GetWorkflowByID(id string) (model.Workflow, err
 	if err != nil {
 		return model.Workflow{}, err
 	}
-	defer f.Close()
 
 	var workflows []model.Workflow
 	err = json.NewDecoder(f).Decode(&workflows)
+	if err != nil {
+		return model.Workflow{}, err
+	}
+	err = f.Close()
 	if err != nil {
 		return model.Workflow{}, err
 	}
@@ -82,10 +93,13 @@ func (r *jsonWorkflowRepository) UpdateWorkflow(workflow model.Workflow) (model.
 	if err != nil {
 		return model.Workflow{}, err
 	}
-	defer f.Close()
 
 	var workflows []model.Workflow
 	err = json.NewDecoder(f).Decode(&workflows)
+	if err != nil {
+		return model.Workflow{}, err
+	}
+	err = f.Close()
 	if err != nil {
 		return model.Workflow{}, err
 	}
@@ -123,10 +137,13 @@ func (r *jsonWorkflowRepository) AddNodeToWorkflow(workflowID string, node model
 	if err != nil {
 		return model.Workflow{}, err
 	}
-	defer f.Close()
 
 	var workflows []model.Workflow
 	err = json.NewDecoder(f).Decode(&workflows)
+	if err != nil {
+		return model.Workflow{}, err
+	}
+	err = f.Close()
 	if err != nil {
 		return model.Workflow{}, err
 	}
@@ -164,10 +181,13 @@ func (r *jsonWorkflowRepository) DeleteNodeFromWorkflow(workflowID string, taskI
 	if err != nil {
 		return model.Workflow{}, err
 	}
-	defer f.Close()
 
 	var workflows []model.Workflow
 	err = json.NewDecoder(f).Decode(&workflows)
+	if err != nil {
+		return model.Workflow{}, err
+	}
+	err = f.Close()
 	if err != nil {
 		return model.Workflow{}, err
 	}
@@ -212,10 +232,13 @@ func (r *jsonWorkflowRepository) DeleteWorkflow(id string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
 
 	var workflows []model.Workflow
 	err = json.NewDecoder(f).Decode(&workflows)
+	if err != nil {
+		return err
+	}
+	err = f.Close()
 	if err != nil {
 		return err
 	}

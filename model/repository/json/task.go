@@ -15,9 +15,14 @@ type jsonTaskRepository struct {
 }
 
 func NewJSONTaskRepository(repo *JsonRepository) model.TaskRepository {
+	path := filepath.Join(repo.RootDir, "tasks.json")
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		os.WriteFile(path, []byte("[]"), 0644)
+	}
+
 	return &jsonTaskRepository{
 		config:   *repo,
-		fileName: filepath.Join(repo.RootDir, "tasks.json"),
+		fileName: path,
 	}
 }
 
@@ -26,10 +31,13 @@ func (r *jsonTaskRepository) CreateTask(task model.Task) (model.Task, error) {
 	if err != nil {
 		return model.Task{}, err
 	}
-	defer f.Close()
 
 	var tasks []model.Task
 	err = json.NewDecoder(f).Decode(&tasks)
+	if err != nil {
+		return model.Task{}, err
+	}
+	err = f.Close()
 	if err != nil {
 		return model.Task{}, err
 	}
@@ -60,10 +68,13 @@ func (r *jsonTaskRepository) GetTaskByID(id string) (model.Task, error) {
 	if err != nil {
 		return model.Task{}, err
 	}
-	defer f.Close()
 
 	var tasks []model.Task
 	err = json.NewDecoder(f).Decode(&tasks)
+	if err != nil {
+		return model.Task{}, err
+	}
+	err = f.Close()
 	if err != nil {
 		return model.Task{}, err
 	}
@@ -83,10 +94,13 @@ func (r *jsonTaskRepository) UpdateTask(task model.Task) (model.Task, error) {
 	if err != nil {
 		return model.Task{}, err
 	}
-	defer f.Close()
 
 	var tasks []model.Task
 	err = json.NewDecoder(f).Decode(&tasks)
+	if err != nil {
+		return model.Task{}, err
+	}
+	err = f.Close()
 	if err != nil {
 		return model.Task{}, err
 	}
@@ -123,10 +137,13 @@ func (r *jsonTaskRepository) DeleteTask(id string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
 
 	var tasks []model.Task
 	err = json.NewDecoder(f).Decode(&tasks)
+	if err != nil {
+		return err
+	}
+	err = f.Close()
 	if err != nil {
 		return err
 	}
