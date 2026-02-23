@@ -27,55 +27,61 @@ func NewJSONWorkflowRunRepository(repo *JsonRepository) model.WorkflowRunReposit
 	}
 }
 
-func (r *jsonWorkflowRunRepository) CreateWorkflowRun(workflowRun model.WorkflowRun) (model.WorkflowRun, error) {
-	f, err := os.OpenFile(r.fileName, os.O_RDWR|os.O_CREATE, 0755)
+func (r *jsonWorkflowRunRepository) readCurrent() ([]model.WorkflowRun, error) {
+	f, err := os.Open(r.fileName)
 	if err != nil {
-		return model.WorkflowRun{}, err
+		return nil, err
 	}
 
 	var workflowRuns []model.WorkflowRun
 	err = json.NewDecoder(f).Decode(&workflowRuns)
 	if err != nil {
-		return model.WorkflowRun{}, err
+		return nil, err
 	}
 	err = f.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return workflowRuns, nil
+}
+
+func (r *jsonWorkflowRunRepository) write(workflowRuns []model.WorkflowRun) error {
+	data, err := json.Marshal(workflowRuns)
+	if err != nil {
+		return err
+	}
+
+	tmpFileName := r.fileName + ".tmp"
+	err = os.WriteFile(tmpFileName, data, 0644)
+	if err != nil {
+		return err
+	}
+
+	err = os.Rename(tmpFileName, r.fileName)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *jsonWorkflowRunRepository) CreateWorkflowRun(workflowRun model.WorkflowRun) (model.WorkflowRun, error) {
+	workflowRuns, err := r.readCurrent()
 	if err != nil {
 		return model.WorkflowRun{}, err
 	}
 
 	workflowRuns = append(workflowRuns, workflowRun)
 
-	data, err := json.Marshal(workflowRuns)
+	err = r.write(workflowRuns)
 	if err != nil {
 		return model.WorkflowRun{}, err
 	}
-
-	tmpFileName := r.fileName + ".tmp"
-	err = os.WriteFile(tmpFileName, data, 0644)
-	if err != nil {
-		return model.WorkflowRun{}, err
-	}
-
-	err = os.Rename(tmpFileName, r.fileName)
-	if err != nil {
-		return model.WorkflowRun{}, err
-	}
-
 	return workflowRun, nil
 }
 
 func (r *jsonWorkflowRunRepository) GetWorkflowRunByID(id string) (model.WorkflowRun, error) {
-	f, err := os.Open(r.fileName)
-	if err != nil {
-		return model.WorkflowRun{}, err
-	}
-
-	var workflowRuns []model.WorkflowRun
-	err = json.NewDecoder(f).Decode(&workflowRuns)
-	if err != nil {
-		return model.WorkflowRun{}, err
-	}
-	err = f.Close()
+	workflowRuns, err := r.readCurrent()
 	if err != nil {
 		return model.WorkflowRun{}, err
 	}
@@ -91,17 +97,7 @@ func (r *jsonWorkflowRunRepository) GetWorkflowRunByID(id string) (model.Workflo
 }
 
 func (r *jsonWorkflowRunRepository) GetWorkflowRunsByWorkflowID(workflowID string) ([]model.WorkflowRun, error) {
-	f, err := os.Open(r.fileName)
-	if err != nil {
-		return nil, err
-	}
-
-	var workflowRuns []model.WorkflowRun
-	err = json.NewDecoder(f).Decode(&workflowRuns)
-	if err != nil {
-		return nil, err
-	}
-	err = f.Close()
+	workflowRuns, err := r.readCurrent()
 	if err != nil {
 		return nil, err
 	}
@@ -117,13 +113,7 @@ func (r *jsonWorkflowRunRepository) GetWorkflowRunsByWorkflowID(workflowID strin
 }
 
 func (r *jsonWorkflowRunRepository) GetWorkflowRunsBefore(workflowID string, before time.Time) ([]model.WorkflowRun, error) {
-	f, err := os.Open(r.fileName)
-	if err != nil {
-		return nil, err
-	}
-
-	var workflowRuns []model.WorkflowRun
-	err = json.NewDecoder(f).Decode(&workflowRuns)
+	workflowRuns, err := r.readCurrent()
 	if err != nil {
 		return nil, err
 	}

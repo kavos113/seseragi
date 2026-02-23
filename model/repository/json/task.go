@@ -26,36 +26,54 @@ func NewJSONTaskRepository(repo *JsonRepository) model.TaskRepository {
 	}
 }
 
-func (r *jsonTaskRepository) CreateTask(task model.Task) (model.Task, error) {
-	f, err := os.OpenFile(r.fileName, os.O_RDWR|os.O_CREATE, 0755)
+func (r *jsonTaskRepository) readCurrent() ([]model.Task, error) {
+	f, err := os.Open(r.fileName)
 	if err != nil {
-		return model.Task{}, err
+		return nil, err
 	}
 
 	var tasks []model.Task
-	err = json.NewDecoder(f).Decode(&tasks)
+	err = json.NewDecoder(f).Decode(&tasks)	
 	if err != nil {
-		return model.Task{}, err
+		return nil, err
 	}
 	err = f.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return tasks, nil
+}
+
+func (r *jsonTaskRepository) write(tasks []model.Task) error {
+	data, err := json.Marshal(tasks)
+	if err != nil {
+		return err
+	}
+
+	tmpFileName := r.fileName + ".tmp"
+	err = os.WriteFile(tmpFileName, data, 0644)
+	if err != nil {
+		return err
+	}
+
+	err = os.Rename(tmpFileName, r.fileName)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *jsonTaskRepository) CreateTask(task model.Task) (model.Task, error) {
+	tasks, err := r.readCurrent()
 	if err != nil {
 		return model.Task{}, err
 	}
 
 	tasks = append(tasks, task)
 
-	data, err := json.Marshal(tasks)
-	if err != nil {
-		return model.Task{}, err
-	}
-
-	tmpFileName := r.fileName + ".tmp"
-	err = os.WriteFile(tmpFileName, data, 0644)
-	if err != nil {
-		return model.Task{}, err
-	}
-
-	err = os.Rename(tmpFileName, r.fileName)
+	err = r.write(tasks)
 	if err != nil {
 		return model.Task{}, err
 	}
@@ -64,17 +82,7 @@ func (r *jsonTaskRepository) CreateTask(task model.Task) (model.Task, error) {
 }
 
 func (r *jsonTaskRepository) GetTaskByID(id string) (model.Task, error) {
-	f, err := os.Open(r.fileName)
-	if err != nil {
-		return model.Task{}, err
-	}
-
-	var tasks []model.Task
-	err = json.NewDecoder(f).Decode(&tasks)
-	if err != nil {
-		return model.Task{}, err
-	}
-	err = f.Close()
+	tasks, err := r.readCurrent()
 	if err != nil {
 		return model.Task{}, err
 	}
@@ -90,17 +98,7 @@ func (r *jsonTaskRepository) GetTaskByID(id string) (model.Task, error) {
 }
 
 func (r *jsonTaskRepository) UpdateTask(task model.Task) (model.Task, error) {
-	f, err := os.OpenFile(r.fileName, os.O_RDWR, 0755)
-	if err != nil {
-		return model.Task{}, err
-	}
-
-	var tasks []model.Task
-	err = json.NewDecoder(f).Decode(&tasks)
-	if err != nil {
-		return model.Task{}, err
-	}
-	err = f.Close()
+	tasks, err := r.readCurrent()
 	if err != nil {
 		return model.Task{}, err
 	}
@@ -113,18 +111,8 @@ func (r *jsonTaskRepository) UpdateTask(task model.Task) (model.Task, error) {
 	}
 
 	tasks[taskIndex] = task
-	data, err := json.Marshal(tasks)
-	if err != nil {
-		return model.Task{}, err
-	}
 
-	tmpFileName := r.fileName + ".tmp"
-	err = os.WriteFile(tmpFileName, data, 0644)
-	if err != nil {
-		return model.Task{}, err
-	}
-
-	err = os.Rename(tmpFileName, r.fileName)
+	err = r.write(tasks)
 	if err != nil {
 		return model.Task{}, err
 	}
@@ -133,17 +121,7 @@ func (r *jsonTaskRepository) UpdateTask(task model.Task) (model.Task, error) {
 }
 
 func (r *jsonTaskRepository) DeleteTask(id string) error {
-	f, err := os.OpenFile(r.fileName, os.O_RDWR, 0755)
-	if err != nil {
-		return err
-	}
-
-	var tasks []model.Task
-	err = json.NewDecoder(f).Decode(&tasks)
-	if err != nil {
-		return err
-	}
-	err = f.Close()
+	tasks, err := r.readCurrent()
 	if err != nil {
 		return err
 	}
@@ -155,18 +133,7 @@ func (r *jsonTaskRepository) DeleteTask(id string) error {
 		return model.ErrNotFound
 	}
 
-	data, err := json.Marshal(newTasks)
-	if err != nil {
-		return err
-	}
-
-	tmpFileName := r.fileName + ".tmp"
-	err = os.WriteFile(tmpFileName, data, 0644)
-	if err != nil {
-		return err
-	}
-
-	err = os.Rename(tmpFileName, r.fileName)
+	err = r.write(newTasks)
 	if err != nil {
 		return err
 	}

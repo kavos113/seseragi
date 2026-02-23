@@ -26,36 +26,55 @@ func NewJSONWorkflowRepository(repo *JsonRepository) model.WorkflowRepository {
 	}
 }
 
-func (r *jsonWorkflowRepository) CreateWorkflow(workflow model.Workflow) (model.Workflow, error) {
-	f, err := os.OpenFile(r.fileName, os.O_RDWR|os.O_CREATE, 0755)
+func (r *jsonWorkflowRepository) readCurrent() ([]model.Workflow, error) {
+	f, err := os.Open(r.fileName)
 	if err != nil {
-		return model.Workflow{}, err
+		return nil, err
 	}
 
 	var workflows []model.Workflow
 	err = json.NewDecoder(f).Decode(&workflows)
 	if err != nil {
-		return model.Workflow{}, err
+		return nil, err
 	}
+
 	err = f.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return workflows, nil
+}
+
+func (r *jsonWorkflowRepository) write(workflows []model.Workflow) error {
+	data, err := json.Marshal(workflows)
+	if err != nil {
+		return err
+	}
+
+	tmpFileName := r.fileName + ".tmp"
+	err = os.WriteFile(tmpFileName, data, 0644)
+	if err != nil {
+		return err
+	}
+
+	err = os.Rename(tmpFileName, r.fileName)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *jsonWorkflowRepository) CreateWorkflow(workflow model.Workflow) (model.Workflow, error) {
+	workflows, err := r.readCurrent()
 	if err != nil {
 		return model.Workflow{}, err
 	}
 
 	workflows = append(workflows, workflow)
 
-	data, err := json.Marshal(workflows)
-	if err != nil {
-		return model.Workflow{}, err
-	}
-
-	tmpFileName := r.fileName + ".tmp"
-	err = os.WriteFile(tmpFileName, data, 0644)
-	if err != nil {
-		return model.Workflow{}, err
-	}
-
-	err = os.Rename(tmpFileName, r.fileName)
+	err = r.write(workflows)
 	if err != nil {
 		return model.Workflow{}, err
 	}
@@ -64,17 +83,7 @@ func (r *jsonWorkflowRepository) CreateWorkflow(workflow model.Workflow) (model.
 }
 
 func (r *jsonWorkflowRepository) GetWorkflowByID(id string) (model.Workflow, error) {
-	f, err := os.Open(r.fileName)
-	if err != nil {
-		return model.Workflow{}, err
-	}
-
-	var workflows []model.Workflow
-	err = json.NewDecoder(f).Decode(&workflows)
-	if err != nil {
-		return model.Workflow{}, err
-	}
-	err = f.Close()
+	workflows, err := r.readCurrent()
 	if err != nil {
 		return model.Workflow{}, err
 	}
@@ -89,17 +98,7 @@ func (r *jsonWorkflowRepository) GetWorkflowByID(id string) (model.Workflow, err
 }
 
 func (r *jsonWorkflowRepository) UpdateWorkflow(workflow model.Workflow) (model.Workflow, error) {
-	f, err := os.OpenFile(r.fileName, os.O_RDWR|os.O_CREATE, 0755)
-	if err != nil {
-		return model.Workflow{}, err
-	}
-
-	var workflows []model.Workflow
-	err = json.NewDecoder(f).Decode(&workflows)
-	if err != nil {
-		return model.Workflow{}, err
-	}
-	err = f.Close()
+	workflows, err := r.readCurrent()
 	if err != nil {
 		return model.Workflow{}, err
 	}
@@ -113,18 +112,7 @@ func (r *jsonWorkflowRepository) UpdateWorkflow(workflow model.Workflow) (model.
 
 	workflows[workflowIndex] = workflow
 
-	data, err := json.Marshal(workflows)
-	if err != nil {
-		return model.Workflow{}, err
-	}
-
-	tmpFileName := r.fileName + ".tmp"
-	err = os.WriteFile(tmpFileName, data, 0644)
-	if err != nil {
-		return model.Workflow{}, err
-	}
-
-	err = os.Rename(tmpFileName, r.fileName)
+	err = r.write(workflows)
 	if err != nil {
 		return model.Workflow{}, err
 	}
@@ -133,17 +121,7 @@ func (r *jsonWorkflowRepository) UpdateWorkflow(workflow model.Workflow) (model.
 }
 
 func (r *jsonWorkflowRepository) AddNodeToWorkflow(workflowID string, node model.Node) (model.Workflow, error) {
-	f, err := os.OpenFile(r.fileName, os.O_RDWR|os.O_CREATE, 0755)
-	if err != nil {
-		return model.Workflow{}, err
-	}
-
-	var workflows []model.Workflow
-	err = json.NewDecoder(f).Decode(&workflows)
-	if err != nil {
-		return model.Workflow{}, err
-	}
-	err = f.Close()
+	workflows, err := r.readCurrent()
 	if err != nil {
 		return model.Workflow{}, err
 	}
@@ -157,18 +135,7 @@ func (r *jsonWorkflowRepository) AddNodeToWorkflow(workflowID string, node model
 
 	workflows[workflowIndex].Nodes = append(workflows[workflowIndex].Nodes, node)
 
-	data, err := json.Marshal(workflows)
-	if err != nil {
-		return model.Workflow{}, err
-	}
-
-	tmpFileName := r.fileName + ".tmp"
-	err = os.WriteFile(tmpFileName, data, 0644)
-	if err != nil {
-		return model.Workflow{}, err
-	}
-
-	err = os.Rename(tmpFileName, r.fileName)
+	err = r.write(workflows)
 	if err != nil {
 		return model.Workflow{}, err
 	}
@@ -177,17 +144,7 @@ func (r *jsonWorkflowRepository) AddNodeToWorkflow(workflowID string, node model
 }
 
 func (r *jsonWorkflowRepository) DeleteNodeFromWorkflow(workflowID string, taskID string) (model.Workflow, error) {
-	f, err := os.OpenFile(r.fileName, os.O_RDWR|os.O_CREATE, 0755)
-	if err != nil {
-		return model.Workflow{}, err
-	}
-
-	var workflows []model.Workflow
-	err = json.NewDecoder(f).Decode(&workflows)
-	if err != nil {
-		return model.Workflow{}, err
-	}
-	err = f.Close()
+	workflows, err := r.readCurrent()
 	if err != nil {
 		return model.Workflow{}, err
 	}
@@ -208,18 +165,7 @@ func (r *jsonWorkflowRepository) DeleteNodeFromWorkflow(workflowID string, taskI
 	}
 	workflow.Nodes = newNodes
 
-	data, err := json.Marshal(workflows)
-	if err != nil {
-		return model.Workflow{}, err
-	}
-
-	tmpFileName := r.fileName + ".tmp"
-	err = os.WriteFile(tmpFileName, data, 0644)
-	if err != nil {
-		return model.Workflow{}, err
-	}
-
-	err = os.Rename(tmpFileName, r.fileName)
+	err = r.write(workflows)
 	if err != nil {
 		return model.Workflow{}, err
 	}
@@ -228,17 +174,7 @@ func (r *jsonWorkflowRepository) DeleteNodeFromWorkflow(workflowID string, taskI
 }
 
 func (r *jsonWorkflowRepository) DeleteWorkflow(id string) error {
-	f, err := os.OpenFile(r.fileName, os.O_RDWR|os.O_CREATE, 0755)
-	if err != nil {
-		return err
-	}
-
-	var workflows []model.Workflow
-	err = json.NewDecoder(f).Decode(&workflows)
-	if err != nil {
-		return err
-	}
-	err = f.Close()
+	workflows, err := r.readCurrent()
 	if err != nil {
 		return err
 	}
@@ -250,18 +186,7 @@ func (r *jsonWorkflowRepository) DeleteWorkflow(id string) error {
 		return model.ErrNotFound
 	}
 
-	data, err := json.Marshal(newWorkflows)
-	if err != nil {
-		return err
-	}
-
-	tmpFileName := r.fileName + ".tmp"
-	err = os.WriteFile(tmpFileName, data, 0644)
-	if err != nil {
-		return err
-	}
-
-	err = os.Rename(tmpFileName, r.fileName)
+	err = r.write(newWorkflows)
 	if err != nil {
 		return err
 	}
