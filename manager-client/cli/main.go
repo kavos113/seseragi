@@ -12,7 +12,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	if os.Args[1] == "build" {
+	switch os.Args[1] {
+	case "build":
 		if len(os.Args) < 3 {
 			println("Usage: seseragi-cli build <yaml_path>")
 			os.Exit(1)
@@ -22,7 +23,7 @@ func main() {
 			os.Exit(1)
 		}
 		println("Task built successfully")
-	} else if os.Args[1] == "add-workflow" {
+	case "add-workflow":
 		if len(os.Args) < 3 {
 			println("Usage: seseragi-cli add-workflow <yaml_path>")
 			os.Exit(1)
@@ -32,7 +33,7 @@ func main() {
 			os.Exit(1)
 		}
 		println("Workflow added successfully")
-	} else {
+	default:
 		println("Unknown command:", os.Args[1])
 		os.Exit(1)
 	}

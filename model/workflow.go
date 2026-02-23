@@ -44,4 +44,6 @@ type WorkflowRepository interface {
 type WorkflowRunRepository interface {
 	CreateWorkflowRun(workflowRun WorkflowRun) (WorkflowRun, error)
 	GetWorkflowRunByID(id string) (WorkflowRun, error)
+	GetWorkflowRunsByWorkflowID(workflowID string) ([]WorkflowRun, error)
+	GetWorkflowRunsBefore(workflowID string, before time.Time) ([]WorkflowRun, error)
 }

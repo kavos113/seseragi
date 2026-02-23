@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"time"
 
 	"github.com/kavos113/seseragi/model"
 )
@@ -18,7 +19,7 @@ func NewJSONWorkflowRunRepository(repo *JsonRepository) model.WorkflowRunReposit
 	path := filepath.Join(repo.RootDir, "workflow_runs.json")
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		os.WriteFile(path, []byte("[]"), 0644)
-	}	
+	}
 
 	return &jsonWorkflowRunRepository{
 		config:   *repo,
@@ -87,4 +88,51 @@ func (r *jsonWorkflowRunRepository) GetWorkflowRunByID(id string) (model.Workflo
 	}
 
 	return workflowRuns[index], nil
+}
+
+func (r *jsonWorkflowRunRepository) GetWorkflowRunsByWorkflowID(workflowID string) ([]model.WorkflowRun, error) {
+	f, err := os.Open(r.fileName)
+	if err != nil {
+		return nil, err
+	}
+
+	var workflowRuns []model.WorkflowRun
+	err = json.NewDecoder(f).Decode(&workflowRuns)
+	if err != nil {
+		return nil, err
+	}
+	err = f.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	var result []model.WorkflowRun
+	for _, wr := range workflowRuns {
+		if wr.WorkflowID == workflowID {
+			result = append(result, wr)
+		}
+	}
+
+	return result, nil
+}
+
+func (r *jsonWorkflowRunRepository) GetWorkflowRunsBefore(workflowID string, before time.Time) ([]model.WorkflowRun, error) {
+	f, err := os.Open(r.fileName)
+	if err != nil {
+		return nil, err
+	}
+
+	var workflowRuns []model.WorkflowRun
+	err = json.NewDecoder(f).Decode(&workflowRuns)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []model.WorkflowRun
+	for _, wr := range workflowRuns {
+		if wr.WorkflowID == workflowID && wr.EndTime.Before(before) {
+			result = append(result, wr)
+		}
+	}
+	return result, nil
 }
