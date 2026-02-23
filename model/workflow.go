@@ -12,6 +12,7 @@ type Workflow struct {
 	Name        string
 	RunInterval time.Duration
 	Nodes       []Node
+	YamlPath    string
 }
 
 type WorkflowRun struct {

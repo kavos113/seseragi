@@ -68,3 +68,68 @@ path: "task.yaml"
 		})
 	}
 }
+
+func TestLoadWorkflowInfoFromYAML(t *testing.T) {
+	tests := []struct {
+		name     string
+		yamlData []byte
+		yamlPath string
+		want     *WorkflowInfo
+		wantErr  bool
+	}{
+		{
+			name: "valid YAML",
+			yamlData: []byte(`
+name: "hello-workflow"
+description: "Hello Workflow"
+nodes:
+  go-hello:
+    id: "some-id"
+`),
+			yamlPath: "flow.yaml",
+			want: &WorkflowInfo{
+				Name:        "hello-workflow",
+				Description: "Hello Workflow",
+				Nodes: map[string]NodeInfo{
+					"go-hello": {ID: "some-id"},
+				},
+				Path: "flow.yaml",
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := LoadWorkflowInfoFromYAML(tt.yamlData, tt.yamlPath)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("LoadWorkflowInfoFromYAML() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if got.Name != tt.want.Name {
+				t.Errorf("LoadWorkflowInfoFromYAML() got.Name = %v, want %v", got.Name, tt.want.Name)
+			}
+			if got.Description != tt.want.Description {
+				t.Errorf("LoadWorkflowInfoFromYAML() got.Description = %v, want %v", got.Description, tt.want.Description)
+			}
+			if len(got.Nodes) != len(tt.want.Nodes) {
+				t.Errorf("LoadWorkflowInfoFromYAML() got.Nodes length = %v, want %v", len(got.Nodes), len(tt.want.Nodes))
+			} else {
+				for key, gotNode := range got.Nodes {
+					wantNode, exists := tt.want.Nodes[key]
+					if !exists {
+						t.Errorf("LoadWorkflowInfoFromYAML() got.Nodes has unexpected key = %v", key)
+						continue
+					}
+					if gotNode.ID != wantNode.ID {
+						t.Errorf("LoadWorkflowInfoFromYAML() got.Nodes[%v].ID = %v, want %v", key, gotNode.ID, wantNode.ID)
+					}
+				}
+			}
+			if got.Path != tt.want.Path {
+				t.Errorf("LoadWorkflowInfoFromYAML() got.Path = %v, want %v", got.Path, tt.want.Path)
+			}
+		})
+	}
+}
