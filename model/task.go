@@ -4,6 +4,7 @@ type Task struct {
 	ID        string
 	Name      string
 	ImageName string
+	YamlPath  string
 }
 
 type TaskRepository interface {

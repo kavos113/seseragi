@@ -13,13 +13,13 @@ type DockerClient struct {
 	client *client.Client
 }
 
-func NewDockerClient() (*DockerClient, error) {
+func NewDockerClient() *DockerClient {
 	cli, err := client.New(client.FromEnv, client.WithAPIVersionFromEnv())
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
-	return &DockerClient{client: cli}, nil
+	return &DockerClient{client: cli}
 }
 
 func (d *DockerClient) BuildImage(contextDir string, imageName string) error {
