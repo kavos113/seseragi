@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"bytes"
 	"context"
+	"encoding/json"
 	"os"
 
 	"github.com/moby/moby/client"
@@ -25,9 +26,13 @@ func NewDockerClient() *DockerClient {
 func (d *DockerClient) BuildImage(contextDir string, imageName string) error {
 	var tarBuf bytes.Buffer
 	tw := tar.NewWriter(&tarBuf)
-	defer tw.Close()
 
 	if err := tw.AddFS(os.DirFS(contextDir)); err != nil {
+		return err
+	}
+
+	err := tw.Close()
+	if err != nil {
 		return err
 	}
 
@@ -43,5 +48,21 @@ func (d *DockerClient) BuildImage(contextDir string, imageName string) error {
 		return err
 	}
 	defer resp.Body.Close()
+
+	decoder := json.NewDecoder(resp.Body)
+	for {
+		var msg struct {
+			Stream string `json:"stream"`
+			Error  string `json:"error"`
+		}
+		if err := decoder.Decode(&msg); err != nil {
+			break
+		}
+		if msg.Error != "" {
+			return os.ErrInvalid
+		}
+		print(msg.Stream)
+	}
+
 	return nil
 }

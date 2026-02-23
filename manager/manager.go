@@ -11,22 +11,16 @@ import (
 )
 
 var (
-	jsonRepo     = json.NewJsonRepository("tasks")
+	jsonRepo     = json.NewJsonRepository("data")
 	taskRepo     = json.NewJSONTaskRepository(jsonRepo)
 	dockerClient = NewDockerClient()
 )
 
 // yamlPath is expected to be a ABSOLUTE PATH
 func BuildTask(yamlPath string) error {
-	f, err := os.Open(yamlPath)
+	yamlData, err := os.ReadFile(yamlPath)
 	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	var yamlData []byte
-	if _, err := f.Read(yamlData); err != nil {
-		return err
+		return err	
 	}
 
 	taskInfo, err := LoadTaskInfoFromYAML(yamlData, yamlPath)
