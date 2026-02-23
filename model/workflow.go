@@ -17,29 +17,30 @@ type Workflow struct {
 type WorkflowRun struct {
 	ID         string
 	WorkflowID string
+	StartTime  time.Time
+	EndTime    time.Time
+	Status     WorkflowStatus
 }
 
-type NodeRepository interface {
-	CreateNode(node Node) (Node, error)
-	GetNodeByID(id string) (Node, error)
-	
-	UpdateNode(node Node) (Node, error)
-	DeleteNode(id string) error
-}
+type WorkflowStatus string
+
+const (
+	WorkflowStatusCompleted WorkflowStatus = "completed"
+	WorkflowStatusFailed    WorkflowStatus = "failed"
+	WorkflowStatusCancelled WorkflowStatus = "cancelled"
+)
 
 type WorkflowRepository interface {
 	CreateWorkflow(workflow Workflow) (Workflow, error)
 	GetWorkflowByID(id string) (Workflow, error)
-	
+
 	UpdateWorkflow(workflow Workflow) (Workflow, error)
 	AddNodeToWorkflow(workflowID string, node Node) (Workflow, error)
+	DeleteNodeFromWorkflow(workflowID string, taskID string) (Workflow, error)
 	DeleteWorkflow(id string) error
 }
 
 type WorkflowRunRepository interface {
 	CreateWorkflowRun(workflowRun WorkflowRun) (WorkflowRun, error)
 	GetWorkflowRunByID(id string) (WorkflowRun, error)
-	
-	UpdateWorkflowRun(workflowRun WorkflowRun) (WorkflowRun, error)
-	DeleteWorkflowRun(id string) error
 }
