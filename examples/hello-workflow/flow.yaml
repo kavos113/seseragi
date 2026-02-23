@@ -1,0 +1,9 @@
+name: "hello-workflow"
+description: "A simple workflow example"
+
+trigger:
+  type: "manual"
+
+nodes:
+  go-hello:
+    context: ./go-hello
