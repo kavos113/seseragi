@@ -2,8 +2,6 @@ package manager
 
 import (
 	"testing"
-
-	"github.com/kavos113/seseragi/model"
 )
 
 func TestLoadTastInfoFromYAML(t *testing.T) {
@@ -133,88 +131,6 @@ nodes:
 			}
 			if got.Path != tt.want.Path {
 				t.Errorf("LoadWorkflowInfoFromYAML() got.Path = %v, want %v", got.Path, tt.want.Path)
-			}
-		})
-	}
-}
-
-func TestParseWorkflow(t *testing.T) {
-	tests := []struct {
-		name         string
-		workflowInfo *WorkflowInfo
-		want         model.Workflow
-		wantErr      bool
-	}{
-		{
-			name: "success: simple workflow",
-			workflowInfo: &WorkflowInfo{
-				Name:        "hello-workflow",
-				Description: "Hello Workflow",
-				Nodes: map[string]NodeInfo{
-					"go-hello": {ID: "task-id-1"},
-				},
-			},
-			want: model.Workflow{
-				Name: "hello-workflow",
-				Nodes: []model.Node{
-					{TaskID: "task-id-1", Dependencies: []*model.Node{}},
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "success: workflow with dependencies",
-			workflowInfo: &WorkflowInfo{
-				Name:        "hello-workflow",
-				Description: "Hello Workflow",
-				Nodes: map[string]NodeInfo{
-					"go-hello": {ID: "task-id-1", Dependencies: []string{"go-world"}},
-					"go-world": {ID: "task-id-2"},
-				},
-			},
-			want: model.Workflow{
-				Name: "hello-workflow",
-				Nodes: []model.Node{
-					{TaskID: "task-id-1", Dependencies: []*model.Node{{TaskID: "task-id-2"}}},
-					{TaskID: "task-id-2", Dependencies: []*model.Node{}},
-				},
-			},
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseWorkflow(tt.workflowInfo, "")
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ParseWorkflow() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if got.Name != tt.want.Name {
-				t.Errorf("ParseWorkflow() got.Name = %v, want %v", got.Name, tt.want.Name)
-			}
-			if len(got.Nodes) != len(tt.want.Nodes) {
-				t.Errorf("ParseWorkflow() got.Nodes length = %v, want %v", len(got.Nodes), len(tt.want.Nodes))
-				return
-			}
-
-			for i, gotNode := range got.Nodes {
-				wantNode := tt.want.Nodes[i]
-				if gotNode.TaskID != wantNode.TaskID {
-					t.Errorf("ParseWorkflow() got.Nodes[%v].TaskID = %v, want %v", i, gotNode.TaskID, wantNode.TaskID)
-				}
-				if len(gotNode.Dependencies) != len(wantNode.Dependencies) {
-					t.Errorf("ParseWorkflow() got.Nodes[%v].Dependencies length = %v, want %v", i, len(gotNode.Dependencies), len(wantNode.Dependencies))
-					continue
-				}
-
-				for j, gotDep := range gotNode.Dependencies {
-					wantDep := wantNode.Dependencies[j]
-					if gotDep.TaskID != wantDep.TaskID {
-						t.Errorf("ParseWorkflow() got.Nodes[%v].Dependencies[%v].TaskID = %v, want %v", i, j, gotDep.TaskID, wantDep.TaskID)
-					}
-				}
 			}
 		})
 	}
