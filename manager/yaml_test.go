@@ -93,6 +93,33 @@ nodes:
 			},
 			wantErr: false,
 		},
+		{
+			name: "valid YAML with dependency",
+			yamlData: []byte(`
+name: "hello-workflow"
+description: "Hello Workflow"
+
+nodes:
+  go-hello:
+    id: "some-id"
+
+  go-world:
+    id: "some-other-id"
+    dependencies:
+      - go-hello
+`),
+			yamlPath: "flow.yaml",
+			want: &WorkflowInfo{
+				Name:        "hello-workflow",
+				Description: "Hello Workflow",
+				Nodes: map[string]NodeInfo{
+					"go-hello": {ID: "some-id"},
+					"go-world": {ID: "some-other-id", Dependencies: []string{"go-hello"}},
+				},
+				Path: "flow.yaml",
+			},
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -107,7 +134,13 @@ nodes:
 			assert.Equal(t, got.Description, tt.want.Description)
 			assert.Equal(t, got.Path, tt.want.Path)
 			assert.Equal(t, len(got.Nodes), len(tt.want.Nodes))
-			assert.Equal(t, got.Nodes["go-hello"].ID, tt.want.Nodes["go-hello"].ID)
+
+			for key, node := range tt.want.Nodes {
+				gotNode, exists := got.Nodes[key]
+				assert.True(t, exists, "Node %s should exist", key)
+				assert.Equal(t, gotNode.ID, node.ID)
+				assert.Equal(t, gotNode.Dependencies, node.Dependencies)
+			}
 		})
 	}
 }
