@@ -112,6 +112,9 @@ func (r *jsonWorkflowRunRepository) GetWorkflowRunsByWorkflowID(workflowID strin
 			result = append(result, wr)
 		}
 	}
+	if len(result) == 0 {
+		return nil, model.ErrNotFound
+	}
 
 	return result, nil
 }
@@ -128,5 +131,9 @@ func (r *jsonWorkflowRunRepository) GetWorkflowRunsAfter(workflowID string, afte
 			result = append(result, wr)
 		}
 	}
+	if len(result) == 0 {
+		return nil, model.ErrNotFound
+	}
+	
 	return result, nil
 }

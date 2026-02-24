@@ -39,7 +39,7 @@ type WorkflowRepository interface {
 
 	UpdateWorkflow(workflow Workflow) (Workflow, error)
 	AddNodeToWorkflow(workflowID string, node Node) (Workflow, error)
-	DeleteNodeFromWorkflow(workflowID string, taskID string) (Workflow, error)
+	DeleteNodeFromWorkflow(workflowID string, nodeName string) (Workflow, error)
 	DeleteWorkflow(id string) error
 }
 
