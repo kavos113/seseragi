@@ -1,6 +1,10 @@
 package manager
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestLoadTastInfoFromYAML(t *testing.T) {
 	tests := []struct {
@@ -53,18 +57,10 @@ path: "task.yaml"
 				return
 			}
 
-			if got.Name != tt.want.Name {
-				t.Errorf("LoadTaskInfoFromYAML() got.Name = %v, want %v", got.Name, tt.want.Name)
-			}
-			if got.Description != tt.want.Description {
-				t.Errorf("LoadTaskInfoFromYAML() got.Description = %v, want %v", got.Description, tt.want.Description)
-			}
-			if got.Context != tt.want.Context {
-				t.Errorf("LoadTaskInfoFromYAML() got.Context = %v, want %v", got.Context, tt.want.Context)
-			}
-			if got.Path != tt.want.Path {
-				t.Errorf("LoadTaskInfoFromYAML() got.Path = %v, want %v", got.Path, tt.want.Path)
-			}
+			assert.Equal(t, got.Name, tt.want.Name)
+			assert.Equal(t, got.Description, tt.want.Description)
+			assert.Equal(t, got.Context, tt.want.Context)
+			assert.Equal(t, got.Path, tt.want.Path)
 		})
 	}
 }
@@ -97,6 +93,33 @@ nodes:
 			},
 			wantErr: false,
 		},
+		{
+			name: "valid YAML with dependency",
+			yamlData: []byte(`
+name: "hello-workflow"
+description: "Hello Workflow"
+
+nodes:
+  go-hello:
+    id: "some-id"
+
+  go-world:
+    id: "some-other-id"
+    dependencies:
+      - go-hello
+`),
+			yamlPath: "flow.yaml",
+			want: &WorkflowInfo{
+				Name:        "hello-workflow",
+				Description: "Hello Workflow",
+				Nodes: map[string]NodeInfo{
+					"go-hello": {ID: "some-id"},
+					"go-world": {ID: "some-other-id", Dependencies: []string{"go-hello"}},
+				},
+				Path: "flow.yaml",
+			},
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -107,28 +130,16 @@ nodes:
 				return
 			}
 
-			if got.Name != tt.want.Name {
-				t.Errorf("LoadWorkflowInfoFromYAML() got.Name = %v, want %v", got.Name, tt.want.Name)
-			}
-			if got.Description != tt.want.Description {
-				t.Errorf("LoadWorkflowInfoFromYAML() got.Description = %v, want %v", got.Description, tt.want.Description)
-			}
-			if len(got.Nodes) != len(tt.want.Nodes) {
-				t.Errorf("LoadWorkflowInfoFromYAML() got.Nodes length = %v, want %v", len(got.Nodes), len(tt.want.Nodes))
-			} else {
-				for key, gotNode := range got.Nodes {
-					wantNode, exists := tt.want.Nodes[key]
-					if !exists {
-						t.Errorf("LoadWorkflowInfoFromYAML() got.Nodes has unexpected key = %v", key)
-						continue
-					}
-					if gotNode.ID != wantNode.ID {
-						t.Errorf("LoadWorkflowInfoFromYAML() got.Nodes[%v].ID = %v, want %v", key, gotNode.ID, wantNode.ID)
-					}
-				}
-			}
-			if got.Path != tt.want.Path {
-				t.Errorf("LoadWorkflowInfoFromYAML() got.Path = %v, want %v", got.Path, tt.want.Path)
+			assert.Equal(t, got.Name, tt.want.Name)
+			assert.Equal(t, got.Description, tt.want.Description)
+			assert.Equal(t, got.Path, tt.want.Path)
+			assert.Equal(t, len(got.Nodes), len(tt.want.Nodes))
+
+			for key, node := range tt.want.Nodes {
+				gotNode, exists := got.Nodes[key]
+				assert.True(t, exists, "Node %s should exist", key)
+				assert.Equal(t, gotNode.ID, node.ID)
+				assert.Equal(t, gotNode.Dependencies, node.Dependencies)
 			}
 		})
 	}

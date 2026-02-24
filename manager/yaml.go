@@ -1,6 +1,8 @@
 package manager
 
-import "go.yaml.in/yaml/v4"
+import (
+	"go.yaml.in/yaml/v4"
+)
 
 type TaskInfo struct {
 	Name        string `yaml:"name"`
@@ -20,7 +22,8 @@ func LoadTaskInfoFromYAML(yamlData []byte, yamlPath string) (*TaskInfo, error) {
 }
 
 type NodeInfo struct {
-	ID string `yaml:"id"`
+	ID           string   `yaml:"id"`
+	Dependencies []string `yaml:"dependencies"`
 }
 
 type WorkflowInfo struct {
