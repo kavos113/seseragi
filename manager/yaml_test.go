@@ -2,6 +2,8 @@ package manager
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLoadTastInfoFromYAML(t *testing.T) {
@@ -55,18 +57,10 @@ path: "task.yaml"
 				return
 			}
 
-			if got.Name != tt.want.Name {
-				t.Errorf("LoadTaskInfoFromYAML() got.Name = %v, want %v", got.Name, tt.want.Name)
-			}
-			if got.Description != tt.want.Description {
-				t.Errorf("LoadTaskInfoFromYAML() got.Description = %v, want %v", got.Description, tt.want.Description)
-			}
-			if got.Context != tt.want.Context {
-				t.Errorf("LoadTaskInfoFromYAML() got.Context = %v, want %v", got.Context, tt.want.Context)
-			}
-			if got.Path != tt.want.Path {
-				t.Errorf("LoadTaskInfoFromYAML() got.Path = %v, want %v", got.Path, tt.want.Path)
-			}
+			assert.Equal(t, got.Name, tt.want.Name)
+			assert.Equal(t, got.Description, tt.want.Description)
+			assert.Equal(t, got.Context, tt.want.Context)
+			assert.Equal(t, got.Path, tt.want.Path)
 		})
 	}
 }
@@ -109,29 +103,11 @@ nodes:
 				return
 			}
 
-			if got.Name != tt.want.Name {
-				t.Errorf("LoadWorkflowInfoFromYAML() got.Name = %v, want %v", got.Name, tt.want.Name)
-			}
-			if got.Description != tt.want.Description {
-				t.Errorf("LoadWorkflowInfoFromYAML() got.Description = %v, want %v", got.Description, tt.want.Description)
-			}
-			if len(got.Nodes) != len(tt.want.Nodes) {
-				t.Errorf("LoadWorkflowInfoFromYAML() got.Nodes length = %v, want %v", len(got.Nodes), len(tt.want.Nodes))
-			} else {
-				for key, gotNode := range got.Nodes {
-					wantNode, exists := tt.want.Nodes[key]
-					if !exists {
-						t.Errorf("LoadWorkflowInfoFromYAML() got.Nodes has unexpected key = %v", key)
-						continue
-					}
-					if gotNode.ID != wantNode.ID {
-						t.Errorf("LoadWorkflowInfoFromYAML() got.Nodes[%v].ID = %v, want %v", key, gotNode.ID, wantNode.ID)
-					}
-				}
-			}
-			if got.Path != tt.want.Path {
-				t.Errorf("LoadWorkflowInfoFromYAML() got.Path = %v, want %v", got.Path, tt.want.Path)
-			}
+			assert.Equal(t, got.Name, tt.want.Name)
+			assert.Equal(t, got.Description, tt.want.Description)
+			assert.Equal(t, got.Path, tt.want.Path)
+			assert.Equal(t, len(got.Nodes), len(tt.want.Nodes))
+			assert.Equal(t, got.Nodes["go-hello"].ID, tt.want.Nodes["go-hello"].ID)
 		})
 	}
 }

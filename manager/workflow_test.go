@@ -1,11 +1,11 @@
 package manager
 
 import (
-	"slices"
 	"testing"
 
 	"github.com/kavos113/seseragi/model"
 	"github.com/kavos113/seseragi/model/mock_model"
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
 
@@ -164,35 +164,10 @@ func TestParseWorkflow(t *testing.T) {
 				return
 			}
 
-			if got.Name != tt.want.Name {
-				t.Errorf("ParseWorkflow() got.Name = %v, want %v", got.Name, tt.want.Name)
-			}
-			if len(got.Nodes) != len(tt.want.Nodes) {
-				t.Errorf("ParseWorkflow() got.Nodes length = %v, want %v", len(got.Nodes), len(tt.want.Nodes))
-				return
-			}
-
-			for _, gotNode := range got.Nodes {
-				wantNodeIndex := slices.IndexFunc(tt.want.Nodes, func(n model.Node) bool {
-					return n.TaskID == gotNode.TaskID
-				})
-				if wantNodeIndex == -1 {
-					t.Errorf("ParseWorkflow() got.Nodes[%v] has unexpected TaskID = %v", wantNodeIndex, gotNode.TaskID)
-					continue
-				}
-				wantNode := tt.want.Nodes[wantNodeIndex]
-
-				if len(gotNode.Dependencies) != len(wantNode.Dependencies) {
-					t.Errorf("ParseWorkflow() got.Nodes[%v].Dependencies length = %v, want %v", wantNodeIndex, len(gotNode.Dependencies), len(wantNode.Dependencies))
-					continue
-				}
-
-				for j, gotDep := range gotNode.Dependencies {
-					if gotDep != wantNode.Dependencies[j] {
-						t.Errorf("ParseWorkflow() got.Nodes[%v].Dependencies[%v] = %v, want %v", wantNodeIndex, j, gotDep, wantNode.Dependencies[j])
-					}
-				}
-			}
+			assert.Equal(t, got.Name, tt.want.Name)
+			assert.Equal(t, got.YamlPath, tt.want.YamlPath)
+			assert.Equal(t, len(got.Nodes), len(tt.want.Nodes))
+			assert.ElementsMatch(t, got.Nodes, tt.want.Nodes)
 		})
 	}
 }
