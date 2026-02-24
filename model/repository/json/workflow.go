@@ -159,7 +159,7 @@ func (r *jsonWorkflowRepository) DeleteNodeFromWorkflow(workflowID string, nodeN
 	if workflowIndex == -1 {
 		return model.Workflow{}, model.ErrNotFound
 	}
-	workflow := workflows[workflowIndex]
+	workflow := &workflows[workflowIndex]
 
 	newNodes := slices.DeleteFunc(workflow.Nodes, func(n model.Node) bool {
 		return n.Name == nodeName
@@ -174,7 +174,7 @@ func (r *jsonWorkflowRepository) DeleteNodeFromWorkflow(workflowID string, nodeN
 		return model.Workflow{}, err
 	}
 
-	return workflow, nil
+	return *workflow, nil
 }
 
 func (r *jsonWorkflowRepository) DeleteWorkflow(id string) error {
