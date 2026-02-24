@@ -3,8 +3,9 @@ package model
 import "time"
 
 type Node struct {
+	Name         string
 	TaskID       string
-	Dependencies []string // TaskIDのリスト
+	Dependencies []string // Nameのリスト
 }
 
 type Workflow struct {

@@ -2,7 +2,6 @@ package manager
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/google/uuid"
@@ -17,28 +16,10 @@ func ParseWorkflow(workflowInfo *WorkflowInfo, yamlPath string) (model.Workflow,
 			return model.Workflow{}, fmt.Errorf("failed to get task by ID %s for node %s: %w", nodeInfo.ID, nodeName, err)
 		}
 		nodes = append(nodes, model.Node{
+			Name:         nodeName,
 			TaskID:       task.ID,
 			Dependencies: []string{},
 		})
-	}
-
-	for nodeName, nodeInfo := range workflowInfo.Nodes {
-		currentNodeIndex := slices.IndexFunc(nodes, func(n model.Node) bool {
-			return n.TaskID == nodeInfo.ID
-		})
-		if currentNodeIndex == -1 {
-			return model.Workflow{}, fmt.Errorf("node %s not found in nodes list", nodeName)
-		}
-		currentNode := &nodes[currentNodeIndex]
-
-		for _, depName := range nodeInfo.Dependencies {
-			depNodeInfo, ok := workflowInfo.Nodes[depName]
-			if !ok {
-				return model.Workflow{}, fmt.Errorf("dependency %s not found for node %s", depName, nodeName)
-			}
-
-			currentNode.Dependencies = append(currentNode.Dependencies, depNodeInfo.ID)
-		}
 	}
 
 	if err := checkCircularDependency(nodes); err != nil {
@@ -59,22 +40,22 @@ func checkCircularDependency(nodes []model.Node) error {
 	// 0: unvisit, 1: visiting, 2: visited
 	state := make(map[string]int)
 
-	var visit func(nodeId string, stack []string) error
-	visit = func(nodeId string, stack []string) error {
-		if state[nodeId] == 1 {
-			return fmt.Errorf("%w: %s", ErrWorkflowCircularDependency, strings.Join(append(stack, nodeId), " -> "))
+	var visit func(nodeName string, stack []string) error
+	visit = func(nodeName string, stack []string) error {
+		if state[nodeName] == 1 {
+			return fmt.Errorf("%w: %s", ErrWorkflowCircularDependency, strings.Join(append(stack, nodeName), " -> "))
 		}
-		if state[nodeId] == 2 {
+		if state[nodeName] == 2 {
 			return nil
 		}
-		state[nodeId] = 1
+		state[nodeName] = 1
 
-		for _, dep := range getDependencies(nodes, nodeId) {
+		for _, dep := range getDependencies(nodes, nodeName) {
 			if err := visit(dep, append(stack, dep)); err != nil {
 				return err
 			}
 		}
-		state[nodeId] = 2
+		state[nodeName] = 2
 		return nil
 	}
 
@@ -86,9 +67,9 @@ func checkCircularDependency(nodes []model.Node) error {
 	return nil
 }
 
-func getDependencies(nodes []model.Node, nodeId string) []string {
+func getDependencies(nodes []model.Node, nodeName string) []string {
 	for _, node := range nodes {
-		if node.TaskID == nodeId {
+		if node.Name == nodeName {
 			return node.Dependencies
 		}
 	}
