@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/kavos113/seseragi/manager"
@@ -22,10 +23,7 @@ func ShowWorkflows() error {
 	}
 
 	for _, wf := range workflows {
-		println("ID:", wf.ID)
-		println("Name:", wf.Name)
-		println("YamlPath:", wf.YamlPath)
-		println("Tasks:")
+		fmt.Printf("%s - %s - %s\n", wf.ID, wf.Name, wf.YamlPath)
 	}
 
 	return nil

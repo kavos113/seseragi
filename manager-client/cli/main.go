@@ -36,6 +36,24 @@ func main() {
 			os.Exit(1)
 		}
 		println("Workflow added successfully")
+	case "show":
+		if len(os.Args) < 3 {
+			println("Usage: seseragi-cli show <type>")
+			println("Types: workflows, tasks")
+			os.Exit(1)
+		}
+		switch os.Args[2] {
+		case "workflows":
+			if err := commands.ShowWorkflows(); err != nil {
+				println("Error:", err.Error())
+				os.Exit(1)
+			}
+		case "tasks":
+			if err := commands.ListTasks(); err != nil {
+				println("Error:", err.Error())
+				os.Exit(1)
+			}
+		}
 	default:
 		println("Unknown command:", os.Args[1])
 		os.Exit(1)
