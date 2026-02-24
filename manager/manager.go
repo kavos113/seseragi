@@ -77,24 +77,9 @@ func AddWorkflow(yamlPath string) error {
 		return err
 	}
 
-	nodes := make([]model.Node, 0, len(workflowInfo.Nodes))
-	for taskName, nodeInfo := range workflowInfo.Nodes {
-		task, err := taskRepo.GetTaskByID(nodeInfo.ID)
-		if err != nil {
-			return fmt.Errorf("failed to get task by ID %s for node %s: %w", nodeInfo.ID, taskName, err)
-		}
-		nodes = append(nodes, model.Node{
-			TaskID:       task.ID,
-			Dependencies: []model.Task{},
-		})
-	}
-
-	id := uuid.New().String()
-	workflow := model.Workflow{
-		ID:       id,
-		Name:     workflowInfo.Name,
-		Nodes:    nodes,
-		YamlPath: yamlPath,
+	workflow, err := ParseWorkflow(workflowInfo, yamlPath)
+	if err != nil {
+		return err
 	}
 
 	if _, err := workflowRepo.CreateWorkflow(workflow); err != nil {
