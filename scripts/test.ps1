@@ -3,7 +3,8 @@ Param(
 )
 
 $testableDir = @(
-    "manager"
+    "manager",
+    "model"
 )
 
 if (Test-Path "cover") {
@@ -22,11 +23,11 @@ foreach ($dir in $testableDir) {
             $coverFile = Join-Path $coverageDir "$dir.coverprofile"
             $htmlFile = Join-Path $coverageDir "$dir.coverage.html"
 
-            go test . -v -covermode=atomic -coverprofile="$coverFile"
+            go test ./... -v -covermode=atomic -coverprofile="$coverFile"
             go tool cover -html="$coverFile" -o "$htmlFile"
         }
         else {
-            go test . -v
+            go test ./... -v
         }
     }
     finally {
