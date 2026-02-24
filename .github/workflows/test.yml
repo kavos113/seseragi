@@ -26,4 +26,6 @@ jobs:
         working-directory: ${{ matrix.directories }}
 
       - name: Run tests
-        run: ./scripts/test.sh
+        run: |
+          chmod +x ./scripts/test.sh
+          ./scripts/test.sh
