@@ -30,16 +30,14 @@ func main() {
 	start := time.Now()
 	fmt.Printf("Running workflow: %s\n", workflow.Name)
 
-	for _, node := range workflow.Nodes {
-		imageName, err := wr.GetImageNameByTaskID(node.TaskID)
+	err = wr.RunWorkflow(workflow, func(n model.Node) error {
+		imageName, err := wr.GetImageNameByTaskID(n.TaskID)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
-		if err := dc.RunContainer(imageName); err != nil {
-			panic(err)
-		}
-	}
+		return dc.RunContainer(imageName)
+	})
 
 	id := uuid.New().String()
 	run := model.WorkflowRun{
