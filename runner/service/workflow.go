@@ -83,7 +83,7 @@ type NodeInfo struct {
 func (wr *WorkflowRunner) RunWorkflow(workflow model.Workflow, runNode func(model.Node) error) error {
 	nodes := make(map[string]*NodeInfo)
 	for _, node := range workflow.Nodes {
-		nodes[node.TaskID] = &NodeInfo{
+		nodes[node.Name] = &NodeInfo{
 			node:   node,
 			doneCh: make(chan struct{}),
 			err:    nil,

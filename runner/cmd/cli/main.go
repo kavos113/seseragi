@@ -46,6 +46,7 @@ func main() {
 	run.EndTime = time.Now()
 	if err != nil {
 		run.Status = model.WorkflowStatusFailed
+		fmt.Printf("Workflow failed: %s\n", err.Error())
 	} else {
 		run.Status = model.WorkflowStatusCompleted
 	}

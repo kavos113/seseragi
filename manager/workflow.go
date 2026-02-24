@@ -11,9 +11,9 @@ import (
 func ParseWorkflow(workflowInfo *WorkflowInfo, yamlPath string) (model.Workflow, error) {
 	nodes := make([]model.Node, 0, len(workflowInfo.Nodes))
 	for nodeName, nodeInfo := range workflowInfo.Nodes {
-		task, err := taskRepo.GetTaskByID(nodeInfo.ID)
+		task, err := taskRepo.GetTaskByName(nodeInfo.Name)
 		if err != nil {
-			return model.Workflow{}, fmt.Errorf("failed to get task by ID %s for node %s: %w", nodeInfo.ID, nodeName, err)
+			return model.Workflow{}, fmt.Errorf("failed to get task by name %s for node %s: %w", nodeInfo.Name, nodeName, err)
 		}
 		dependencies := make([]string, 0, len(nodeInfo.Dependencies))
 		for _, dep := range nodeInfo.Dependencies {

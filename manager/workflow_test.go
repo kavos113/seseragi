@@ -24,12 +24,12 @@ func TestParseWorkflow(t *testing.T) {
 				Name:        "hello-workflow",
 				Description: "Hello Workflow",
 				Nodes: map[string]NodeInfo{
-					"go-hello": {ID: "task-id-1"},
+					"go-hello": {Name: "go-hello", Dependencies: []string{}},
 				},
 			},
 			setupMock: func(repo *mock_model.MockTaskRepository) {
 				repo.EXPECT().
-					GetTaskByID("task-id-1").
+					GetTaskByName("go-hello").
 					Return(model.Task{ID: "task-id-1"}, nil)
 			},
 			want: model.Workflow{
@@ -46,16 +46,16 @@ func TestParseWorkflow(t *testing.T) {
 				Name:        "hello-workflow",
 				Description: "Hello Workflow",
 				Nodes: map[string]NodeInfo{
-					"go-hello": {ID: "task-id-1", Dependencies: []string{"go-world"}},
-					"go-world": {ID: "task-id-2"},
+					"go-hello": {Name: "go-hello", Dependencies: []string{"go-world"}},
+					"go-world": {Name: "go-world", Dependencies: []string{}},
 				},
 			},
 			setupMock: func(repo *mock_model.MockTaskRepository) {
 				repo.EXPECT().
-					GetTaskByID("task-id-1").
+					GetTaskByName("go-hello").
 					Return(model.Task{ID: "task-id-1"}, nil)
 				repo.EXPECT().
-					GetTaskByID("task-id-2").
+					GetTaskByName("go-world").
 					Return(model.Task{ID: "task-id-2"}, nil)
 			},
 			want: model.Workflow{
@@ -73,20 +73,20 @@ func TestParseWorkflow(t *testing.T) {
 				Name:        "hello-workflow",
 				Description: "Hello Workflow",
 				Nodes: map[string]NodeInfo{
-					"go-hello":    {ID: "task-id-1", Dependencies: []string{"go-world", "go-universe"}},
-					"go-world":    {ID: "task-id-2"},
-					"go-universe": {ID: "task-id-3"},
+					"go-hello":    {Name: "go-hello", Dependencies: []string{"go-world", "go-universe"}},
+					"go-world":    {Name: "go-world"},
+					"go-universe": {Name: "go-universe"},
 				},
 			},
 			setupMock: func(repo *mock_model.MockTaskRepository) {
 				repo.EXPECT().
-					GetTaskByID("task-id-1").
+					GetTaskByName("go-hello").
 					Return(model.Task{ID: "task-id-1"}, nil)
 				repo.EXPECT().
-					GetTaskByID("task-id-2").
+					GetTaskByName("go-world").
 					Return(model.Task{ID: "task-id-2"}, nil)
 				repo.EXPECT().
-					GetTaskByID("task-id-3").
+					GetTaskByName("go-universe").
 					Return(model.Task{ID: "task-id-3"}, nil)
 			},
 			want: model.Workflow{
@@ -105,28 +105,28 @@ func TestParseWorkflow(t *testing.T) {
 				Name:        "hello-workflow",
 				Description: "Hello Workflow",
 				Nodes: map[string]NodeInfo{
-					"go-hello":    {ID: "task-id-1", Dependencies: []string{"go-world", "go-universe"}},
-					"go-universe": {ID: "task-id-3", Dependencies: []string{"go-world"}},
-					"go-world":    {ID: "task-id-2"},
+					"go-hello":    {Name: "go-hello", Dependencies: []string{"go-world", "go-universe"}},
+					"go-universe": {Name: "go-universe", Dependencies: []string{"go-world"}},
+					"go-world":    {Name: "go-world"},
 				},
 			},
 			setupMock: func(repo *mock_model.MockTaskRepository) {
 				repo.EXPECT().
-					GetTaskByID("task-id-1").
+					GetTaskByName("go-hello").
 					Return(model.Task{ID: "task-id-1"}, nil)
 				repo.EXPECT().
-					GetTaskByID("task-id-2").
+					GetTaskByName("go-universe").
 					Return(model.Task{ID: "task-id-2"}, nil)
 				repo.EXPECT().
-					GetTaskByID("task-id-3").
+					GetTaskByName("go-world").
 					Return(model.Task{ID: "task-id-3"}, nil)
 			},
 			want: model.Workflow{
 				Name: "hello-workflow",
 				Nodes: []model.Node{
 					{Name: "go-hello", TaskID: "task-id-1", Dependencies: []string{"go-world", "go-universe"}},
-					{Name: "go-universe", TaskID: "task-id-3", Dependencies: []string{"go-world"}},
-					{Name: "go-world", TaskID: "task-id-2", Dependencies: []string{}},
+					{Name: "go-universe", TaskID: "task-id-2", Dependencies: []string{"go-world"}},
+					{Name: "go-world", TaskID: "task-id-3", Dependencies: []string{}},
 				},
 			},
 			wantErr: nil,
@@ -137,12 +137,12 @@ func TestParseWorkflow(t *testing.T) {
 				Name:        "hello-workflow",
 				Description: "Hello Workflow",
 				Nodes: map[string]NodeInfo{
-					"go-hello": {ID: "task-id-1", Dependencies: []string{"go-world"}},
+					"go-hello": {Name: "go-hello", Dependencies: []string{"go-world"}},
 				},
 			},
 			setupMock: func(repo *mock_model.MockTaskRepository) {
 				repo.EXPECT().
-					GetTaskByID("task-id-1").
+					GetTaskByName("go-hello").
 					Return(model.Task{ID: "task-id-1"}, nil)
 			},
 			want:    model.Workflow{},
@@ -154,16 +154,16 @@ func TestParseWorkflow(t *testing.T) {
 				Name:        "hello-workflow",
 				Description: "Hello Workflow",
 				Nodes: map[string]NodeInfo{
-					"go-hello": {ID: "task-id-1", Dependencies: []string{"go-world"}},
-					"go-world": {ID: "task-id-2", Dependencies: []string{"go-hello"}},
+					"go-hello": {Name: "go-hello", Dependencies: []string{"go-world"}},
+					"go-world": {Name: "go-world", Dependencies: []string{"go-hello"}},
 				},
 			},
 			setupMock: func(repo *mock_model.MockTaskRepository) {
 				repo.EXPECT().
-					GetTaskByID("task-id-1").
+					GetTaskByName("go-hello").
 					Return(model.Task{ID: "task-id-1"}, nil)
 				repo.EXPECT().
-					GetTaskByID("task-id-2").
+					GetTaskByName("go-world").
 					Return(model.Task{ID: "task-id-2"}, nil)
 			},
 			want:    model.Workflow{},
@@ -175,20 +175,20 @@ func TestParseWorkflow(t *testing.T) {
 				Name:        "hello-workflow",
 				Description: "Hello Workflow",
 				Nodes: map[string]NodeInfo{
-					"go-hello":    {ID: "task-id-1", Dependencies: []string{"go-world"}},
-					"go-world":    {ID: "task-id-2", Dependencies: []string{"go-universe"}},
-					"go-universe": {ID: "task-id-3", Dependencies: []string{"go-hello"}},
+					"go-hello":    {Name: "go-hello", Dependencies: []string{"go-world"}},
+					"go-world":    {Name: "go-world", Dependencies: []string{"go-universe"}},
+					"go-universe": {Name: "go-universe", Dependencies: []string{"go-hello"}},
 				},
 			},
 			setupMock: func(repo *mock_model.MockTaskRepository) {
 				repo.EXPECT().
-					GetTaskByID("task-id-1").
+					GetTaskByName("go-hello").
 					Return(model.Task{ID: "task-id-1"}, nil)
 				repo.EXPECT().
-					GetTaskByID("task-id-2").
+					GetTaskByName("go-world").
 					Return(model.Task{ID: "task-id-2"}, nil)
 				repo.EXPECT().
-					GetTaskByID("task-id-3").
+					GetTaskByName("go-universe").
 					Return(model.Task{ID: "task-id-3"}, nil)
 			},
 			want:    model.Workflow{},
@@ -200,12 +200,12 @@ func TestParseWorkflow(t *testing.T) {
 				Name:        "hello-workflow",
 				Description: "Hello Workflow",
 				Nodes: map[string]NodeInfo{
-					"go-hello": {ID: "task-id-1"},
+					"go-hello": {Name: "go-hello", Dependencies: []string{}},
 				},
 			},
 			setupMock: func(repo *mock_model.MockTaskRepository) {
 				repo.EXPECT().
-					GetTaskByID("task-id-1").
+					GetTaskByName("go-hello").
 					Return(model.Task{}, errors.New("task not found"))
 			},
 			want:    model.Workflow{},
