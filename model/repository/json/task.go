@@ -97,6 +97,14 @@ func (r *jsonTaskRepository) GetTaskByID(id string) (model.Task, error) {
 	return tasks[taskIndex], nil
 }
 
+func (r *jsonTaskRepository) GetAllTasks() ([]model.Task, error) {
+	tasks, err := r.readCurrent()
+	if err != nil {
+		return nil, err
+	}
+	return tasks, nil
+}
+
 func (r *jsonTaskRepository) UpdateTask(task model.Task) (model.Task, error) {
 	tasks, err := r.readCurrent()
 	if err != nil {

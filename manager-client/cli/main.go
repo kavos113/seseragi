@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/kavos113/seseragi/manager"
 	"github.com/kavos113/seseragi/manager-client/cli/commands"
 )
 
@@ -11,6 +12,8 @@ func main() {
 		println("Usage: seseragi-cli <command> [args]")
 		os.Exit(1)
 	}
+
+	manager.InitRepository()
 
 	switch os.Args[1] {
 	case "build":

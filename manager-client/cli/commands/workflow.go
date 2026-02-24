@@ -14,3 +14,19 @@ func AddWorkflow(yamlPath string) error {
 
 	return manager.AddWorkflow(absPath)
 }
+
+func ShowWorkflows() error {
+	workflows, err := manager.ListWorkflows()
+	if err != nil {
+		return err
+	}
+
+	for _, wf := range workflows {
+		println("ID:", wf.ID)
+		println("Name:", wf.Name)
+		println("YamlPath:", wf.YamlPath)
+		println("Tasks:")
+	}
+
+	return nil
+}
