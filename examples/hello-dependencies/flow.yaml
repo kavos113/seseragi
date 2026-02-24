@@ -1,0 +1,14 @@
+name: "hello-dependencies"
+description: "A simple workflow example with dependencies"
+
+trigger:
+  type: "manual"
+
+nodes:
+  rs-sample:
+    id: dcb0dae2-3fdf-4200-8f56-9f78bd5b1705
+
+  node-sample:
+    id: 5750c34c-f029-45aa-968f-fc2d3b90b637
+    dependencies:
+      - rs-sample

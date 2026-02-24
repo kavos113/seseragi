@@ -1,6 +1,8 @@
 package service
 
 import (
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/kavos113/seseragi/model"
@@ -14,7 +16,12 @@ type WorkflowRunner struct {
 }
 
 func NewWorkflowRunner() *WorkflowRunner {
-	jsonRepo := json.NewJsonRepository("data")
+	userConfigDir, err := os.UserConfigDir()
+	if err != nil {
+		panic(err)
+	}
+
+	jsonRepo := json.NewJsonRepository(filepath.Join(userConfigDir, "seseragi"))
 	return &WorkflowRunner{
 		workflowRepo:    json.NewJSONWorkflowRepository(jsonRepo),
 		workflowRunRepo: json.NewJSONWorkflowRunRepository(jsonRepo),
