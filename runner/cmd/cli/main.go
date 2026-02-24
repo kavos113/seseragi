@@ -27,8 +27,13 @@ func main() {
 		panic(err)
 	}
 
-	start := time.Now()
 	fmt.Printf("Running workflow: %s\n", workflow.Name)
+	id := uuid.New().String()
+	run := model.WorkflowRun{
+		ID:         id,
+		WorkflowID: workflow.ID,
+		StartTime:  time.Now(),
+	}
 
 	err = wr.RunWorkflow(workflow, func(n model.Node) error {
 		imageName, err := wr.GetImageNameByTaskID(n.TaskID)
@@ -38,15 +43,13 @@ func main() {
 
 		return dc.RunContainer(imageName)
 	})
-
-	id := uuid.New().String()
-	run := model.WorkflowRun{
-		ID:         id,
-		WorkflowID: workflow.ID,
-		StartTime:  start,
-		EndTime:    time.Now(),
-		Status:     model.WorkflowStatusCompleted,
+	run.EndTime = time.Now()
+	if err != nil {
+		run.Status = model.WorkflowStatusFailed
+	} else {
+		run.Status = model.WorkflowStatusCompleted
 	}
+
 	if err := wr.SaveWorkflowRun(run); err != nil {
 		panic(err)
 	}

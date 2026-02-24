@@ -122,5 +122,10 @@ func (wr *WorkflowRunner) RunWorkflow(workflow model.Workflow, runNode func(mode
 	}
 
 	wg.Wait()
+	for _, nodeInfo := range nodes {
+		if nodeInfo.err != nil {
+			return fmt.Errorf("task %s failed: %w", nodeInfo.node.TaskID, nodeInfo.err)
+		}
+	}
 	return nil
 }
