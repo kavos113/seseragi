@@ -15,10 +15,14 @@ func ParseWorkflow(workflowInfo *WorkflowInfo, yamlPath string) (model.Workflow,
 		if err != nil {
 			return model.Workflow{}, fmt.Errorf("failed to get task by ID %s for node %s: %w", nodeInfo.ID, nodeName, err)
 		}
+		dependencies := make([]string, 0, len(nodeInfo.Dependencies))
+		for _, dep := range nodeInfo.Dependencies {
+			dependencies = append(dependencies, dep)
+		}
 		nodes = append(nodes, model.Node{
 			Name:         nodeName,
 			TaskID:       task.ID,
-			Dependencies: []string{},
+			Dependencies: dependencies,
 		})
 	}
 

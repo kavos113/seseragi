@@ -35,7 +35,7 @@ func TestParseWorkflow(t *testing.T) {
 			want: model.Workflow{
 				Name: "hello-workflow",
 				Nodes: []model.Node{
-					{TaskID: "task-id-1", Dependencies: []string{}},
+					{Name: "go-hello", TaskID: "task-id-1", Dependencies: []string{}},
 				},
 			},
 			wantErr: nil,
@@ -61,8 +61,8 @@ func TestParseWorkflow(t *testing.T) {
 			want: model.Workflow{
 				Name: "hello-workflow",
 				Nodes: []model.Node{
-					{TaskID: "task-id-1", Dependencies: []string{"task-id-2"}},
-					{TaskID: "task-id-2", Dependencies: []string{}},
+					{Name: "go-hello", TaskID: "task-id-1", Dependencies: []string{"go-world"}},
+					{Name: "go-world", TaskID: "task-id-2", Dependencies: []string{}},
 				},
 			},
 			wantErr: nil,
@@ -92,9 +92,9 @@ func TestParseWorkflow(t *testing.T) {
 			want: model.Workflow{
 				Name: "hello-workflow",
 				Nodes: []model.Node{
-					{TaskID: "task-id-1", Dependencies: []string{"task-id-2", "task-id-3"}},
-					{TaskID: "task-id-2", Dependencies: []string{}},
-					{TaskID: "task-id-3", Dependencies: []string{}},
+					{Name: "go-hello", TaskID: "task-id-1", Dependencies: []string{"go-world", "go-universe"}},
+					{Name: "go-world", TaskID: "task-id-2", Dependencies: []string{}},
+					{Name: "go-universe", TaskID: "task-id-3", Dependencies: []string{}},
 				},
 			},
 			wantErr: nil,
@@ -124,15 +124,15 @@ func TestParseWorkflow(t *testing.T) {
 			want: model.Workflow{
 				Name: "hello-workflow",
 				Nodes: []model.Node{
-					{TaskID: "task-id-1", Dependencies: []string{"task-id-2", "task-id-3"}},
-					{TaskID: "task-id-3", Dependencies: []string{"task-id-2"}},
-					{TaskID: "task-id-2", Dependencies: []string{}},
+					{Name: "go-hello", TaskID: "task-id-1", Dependencies: []string{"go-world", "go-universe"}},
+					{Name: "go-universe", TaskID: "task-id-3", Dependencies: []string{"go-world"}},
+					{Name: "go-world", TaskID: "task-id-2", Dependencies: []string{}},
 				},
 			},
 			wantErr: nil,
 		},
 		{
-			name: "failure: missing task for node",
+			name: "failure: missing dependency",
 			workflowInfo: &WorkflowInfo{
 				Name:        "hello-workflow",
 				Description: "Hello Workflow",
@@ -193,6 +193,23 @@ func TestParseWorkflow(t *testing.T) {
 			},
 			want:    model.Workflow{},
 			wantErr: ErrWorkflowCircularDependency,
+		},
+		{
+			name: "failure: task not found",
+			workflowInfo: &WorkflowInfo{
+				Name:        "hello-workflow",
+				Description: "Hello Workflow",
+				Nodes: map[string]NodeInfo{
+					"go-hello": {ID: "task-id-1"},
+				},
+			},
+			setupMock: func(repo *mock_model.MockTaskRepository) {
+				repo.EXPECT().
+					GetTaskByID("task-id-1").
+					Return(model.Task{}, errors.New("task not found"))
+			},
+			want:    model.Workflow{},
+			wantErr: assert.AnError,
 		},
 	}
 
