@@ -26,6 +26,10 @@ func ParseWorkflow(workflowInfo *WorkflowInfo, yamlPath string) (model.Workflow,
 		})
 	}
 
+	if err := checkMissingDependency(nodes); err != nil {
+		return model.Workflow{}, err
+	}
+
 	if err := checkCircularDependency(nodes); err != nil {
 		return model.Workflow{}, err
 	}
@@ -64,8 +68,24 @@ func checkCircularDependency(nodes []model.Node) error {
 	}
 
 	for _, node := range nodes {
-		if err := visit(node.TaskID, []string{}); err != nil {
+		if err := visit(node.Name, []string{}); err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+func checkMissingDependency(nodes []model.Node) error {
+	nodeNames := make(map[string]bool)
+	for _, node := range nodes {
+		nodeNames[node.Name] = true
+	}
+
+	for _, node := range nodes {
+		for _, dep := range node.Dependencies {
+			if !nodeNames[dep] {
+				return fmt.Errorf("%w: node %s depends on missing node %s", ErrWorkflowMissingDependency, node.Name, dep)
+			}
 		}
 	}
 	return nil
