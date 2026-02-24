@@ -80,14 +80,14 @@ name: "hello-workflow"
 description: "Hello Workflow"
 nodes:
   go-hello:
-    id: "some-id"
+    name: "go-hello"
 `),
 			yamlPath: "flow.yaml",
 			want: &WorkflowInfo{
 				Name:        "hello-workflow",
 				Description: "Hello Workflow",
 				Nodes: map[string]NodeInfo{
-					"go-hello": {ID: "some-id"},
+					"go-hello": {Name: "go-hello"},
 				},
 				Path: "flow.yaml",
 			},
@@ -101,10 +101,10 @@ description: "Hello Workflow"
 
 nodes:
   go-hello:
-    id: "some-id"
+    name: "go-hello"
 
   go-world:
-    id: "some-other-id"
+    name: "go-world"
     dependencies:
       - go-hello
 `),
@@ -113,8 +113,8 @@ nodes:
 				Name:        "hello-workflow",
 				Description: "Hello Workflow",
 				Nodes: map[string]NodeInfo{
-					"go-hello": {ID: "some-id"},
-					"go-world": {ID: "some-other-id", Dependencies: []string{"go-hello"}},
+					"go-hello": {Name: "go-hello"},
+					"go-world": {Name: "go-world", Dependencies: []string{"go-hello"}},
 				},
 				Path: "flow.yaml",
 			},
@@ -138,7 +138,7 @@ nodes:
 			for key, node := range tt.want.Nodes {
 				gotNode, exists := got.Nodes[key]
 				assert.True(t, exists, "Node %s should exist", key)
-				assert.Equal(t, gotNode.ID, node.ID)
+				assert.Equal(t, gotNode.Name, node.Name)
 				assert.Equal(t, gotNode.Dependencies, node.Dependencies)
 			}
 		})

@@ -22,7 +22,7 @@ func LoadTaskInfoFromYAML(yamlData []byte, yamlPath string) (*TaskInfo, error) {
 }
 
 type NodeInfo struct {
-	ID           string   `yaml:"id"`
+	Name         string   `yaml:"name"`
 	Dependencies []string `yaml:"dependencies"`
 }
 
