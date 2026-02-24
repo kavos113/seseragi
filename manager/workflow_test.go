@@ -66,6 +66,87 @@ func TestParseWorkflow(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "success: multiple dependencies",
+			workflowInfo: &WorkflowInfo{
+				Name:        "hello-workflow",
+				Description: "Hello Workflow",
+				Nodes: map[string]NodeInfo{
+					"go-hello":    {ID: "task-id-1", Dependencies: []string{"go-world", "go-universe"}},
+					"go-world":    {ID: "task-id-2"},
+					"go-universe": {ID: "task-id-3"},
+				},
+			},
+			setupMock: func(repo *mock_model.MockTaskRepository) {
+				repo.EXPECT().
+					GetTaskByID("task-id-1").
+					Return(model.Task{ID: "task-id-1"}, nil)
+				repo.EXPECT().
+					GetTaskByID("task-id-2").
+					Return(model.Task{ID: "task-id-2"}, nil)
+				repo.EXPECT().
+					GetTaskByID("task-id-3").
+					Return(model.Task{ID: "task-id-3"}, nil)
+			},
+			want: model.Workflow{
+				Name: "hello-workflow",
+				Nodes: []model.Node{
+					{TaskID: "task-id-1", Dependencies: []*model.Node{{TaskID: "task-id-2"}, {TaskID: "task-id-3"}}},
+					{TaskID: "task-id-2", Dependencies: []*model.Node{}},
+					{TaskID: "task-id-3", Dependencies: []*model.Node{}},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "success: shared dependencies",
+			workflowInfo: &WorkflowInfo{
+				Name:        "hello-workflow",
+				Description: "Hello Workflow",
+				Nodes: map[string]NodeInfo{
+					"go-hello":    {ID: "task-id-1", Dependencies: []string{"go-world", "go-universe"}},
+					"go-universe": {ID: "task-id-3", Dependencies: []string{"go-world"}},
+					"go-world":    {ID: "task-id-2"},
+				},
+			},
+			setupMock: func(repo *mock_model.MockTaskRepository) {
+				repo.EXPECT().
+					GetTaskByID("task-id-1").
+					Return(model.Task{ID: "task-id-1"}, nil)
+				repo.EXPECT().
+					GetTaskByID("task-id-2").
+					Return(model.Task{ID: "task-id-2"}, nil)
+				repo.EXPECT().
+					GetTaskByID("task-id-3").
+					Return(model.Task{ID: "task-id-3"}, nil)
+			},
+			want: model.Workflow{
+				Name: "hello-workflow",
+				Nodes: []model.Node{
+					{TaskID: "task-id-1", Dependencies: []*model.Node{{TaskID: "task-id-2"}, {TaskID: "task-id-3"}}},
+					{TaskID: "task-id-3", Dependencies: []*model.Node{{TaskID: "task-id-2"}}},
+					{TaskID: "task-id-2", Dependencies: []*model.Node{}},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "failure: missing task for node",
+			workflowInfo: &WorkflowInfo{
+				Name:        "hello-workflow",
+				Description: "Hello Workflow",
+				Nodes: map[string]NodeInfo{
+					"go-hello": {ID: "task-id-1", Dependencies: []string{"go-world"}},
+				},
+			},
+			setupMock: func(repo *mock_model.MockTaskRepository) {
+				repo.EXPECT().
+					GetTaskByID("task-id-1").
+					Return(model.Task{ID: "task-id-1"}, nil)
+			},
+			want:    model.Workflow{},
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
