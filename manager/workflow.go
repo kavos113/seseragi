@@ -3,6 +3,7 @@ package manager
 import (
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/kavos113/seseragi/model"
@@ -40,6 +41,10 @@ func ParseWorkflow(workflowInfo *WorkflowInfo, yamlPath string) (model.Workflow,
 		}
 	}
 
+	if err := checkCircularDependency(nodes); err != nil {
+		return model.Workflow{}, err
+	}
+
 	id := uuid.New().String()
 	workflow := model.Workflow{
 		ID:       id,
@@ -48,4 +53,44 @@ func ParseWorkflow(workflowInfo *WorkflowInfo, yamlPath string) (model.Workflow,
 		YamlPath: yamlPath,
 	}
 	return workflow, nil
+}
+
+func checkCircularDependency(nodes []model.Node) error {
+	// 0: unvisit, 1: visiting, 2: visited
+	state := make(map[string]int)
+
+	var visit func(nodeId string, stack []string) error
+	visit = func(nodeId string, stack []string) error {
+		if state[nodeId] == 1 {
+			return fmt.Errorf("%w: %s", ErrWorkflowCircularDependency, strings.Join(append(stack, nodeId), " -> "))
+		}
+		if state[nodeId] == 2 {
+			return nil
+		}
+		state[nodeId] = 1
+
+		for _, dep := range getDependencies(nodes, nodeId) {
+			if err := visit(dep, append(stack, dep)); err != nil {
+				return err
+			}
+		}
+		state[nodeId] = 2
+		return nil
+	}
+
+	for _, node := range nodes {
+		if err := visit(node.TaskID, []string{}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func getDependencies(nodes []model.Node, nodeId string) []string {
+	for _, node := range nodes {
+		if node.TaskID == nodeId {
+			return node.Dependencies
+		}
+	}
+	return []string{}
 }

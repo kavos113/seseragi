@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/kavos113/seseragi/model"
@@ -15,7 +16,7 @@ func TestParseWorkflow(t *testing.T) {
 		workflowInfo *WorkflowInfo
 		setupMock    func(repo *mock_model.MockTaskRepository)
 		want         model.Workflow
-		wantErr      bool
+		wantErr      error
 	}{
 		{
 			name: "success: simple workflow",
@@ -37,7 +38,7 @@ func TestParseWorkflow(t *testing.T) {
 					{TaskID: "task-id-1", Dependencies: []string{}},
 				},
 			},
-			wantErr: false,
+			wantErr: nil,
 		},
 		{
 			name: "success: workflow with dependencies",
@@ -64,7 +65,7 @@ func TestParseWorkflow(t *testing.T) {
 					{TaskID: "task-id-2", Dependencies: []string{}},
 				},
 			},
-			wantErr: false,
+			wantErr: nil,
 		},
 		{
 			name: "success: multiple dependencies",
@@ -96,7 +97,7 @@ func TestParseWorkflow(t *testing.T) {
 					{TaskID: "task-id-3", Dependencies: []string{}},
 				},
 			},
-			wantErr: false,
+			wantErr: nil,
 		},
 		{
 			name: "success: shared dependencies",
@@ -128,7 +129,7 @@ func TestParseWorkflow(t *testing.T) {
 					{TaskID: "task-id-2", Dependencies: []string{}},
 				},
 			},
-			wantErr: false,
+			wantErr: nil,
 		},
 		{
 			name: "failure: missing task for node",
@@ -145,7 +146,53 @@ func TestParseWorkflow(t *testing.T) {
 					Return(model.Task{ID: "task-id-1"}, nil)
 			},
 			want:    model.Workflow{},
-			wantErr: true,
+			wantErr: assert.AnError,
+		},
+		{
+			name: "failure: circular dependency",
+			workflowInfo: &WorkflowInfo{
+				Name:        "hello-workflow",
+				Description: "Hello Workflow",
+				Nodes: map[string]NodeInfo{
+					"go-hello": {ID: "task-id-1", Dependencies: []string{"go-world"}},
+					"go-world": {ID: "task-id-2", Dependencies: []string{"go-hello"}},
+				},
+			},
+			setupMock: func(repo *mock_model.MockTaskRepository) {
+				repo.EXPECT().
+					GetTaskByID("task-id-1").
+					Return(model.Task{ID: "task-id-1"}, nil)
+				repo.EXPECT().
+					GetTaskByID("task-id-2").
+					Return(model.Task{ID: "task-id-2"}, nil)
+			},
+			want:    model.Workflow{},
+			wantErr: ErrWorkflowCircularDependency,
+		},
+		{
+			name: "failure: circular dependency with multiple nodes",
+			workflowInfo: &WorkflowInfo{
+				Name:        "hello-workflow",
+				Description: "Hello Workflow",
+				Nodes: map[string]NodeInfo{
+					"go-hello":    {ID: "task-id-1", Dependencies: []string{"go-world"}},
+					"go-world":    {ID: "task-id-2", Dependencies: []string{"go-universe"}},
+					"go-universe": {ID: "task-id-3", Dependencies: []string{"go-hello"}},
+				},
+			},
+			setupMock: func(repo *mock_model.MockTaskRepository) {
+				repo.EXPECT().
+					GetTaskByID("task-id-1").
+					Return(model.Task{ID: "task-id-1"}, nil)
+				repo.EXPECT().
+					GetTaskByID("task-id-2").
+					Return(model.Task{ID: "task-id-2"}, nil)
+				repo.EXPECT().
+					GetTaskByID("task-id-3").
+					Return(model.Task{ID: "task-id-3"}, nil)
+			},
+			want:    model.Workflow{},
+			wantErr: ErrWorkflowCircularDependency,
 		},
 	}
 
@@ -159,10 +206,15 @@ func TestParseWorkflow(t *testing.T) {
 			taskRepo = mockTaskRepo
 
 			got, err := ParseWorkflow(tt.workflowInfo, "")
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ParseWorkflow() error = %v, wantErr %v", err, tt.wantErr)
+			if tt.wantErr != nil {
+				if errors.Is(tt.wantErr, assert.AnError) {
+					assert.Error(t, err)
+				} else {
+					assert.ErrorIs(t, err, tt.wantErr)
+				}
 				return
 			}
+			assert.NoError(t, err)
 
 			assert.Equal(t, got.Name, tt.want.Name)
 			assert.Equal(t, got.YamlPath, tt.want.YamlPath)
