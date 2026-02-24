@@ -147,7 +147,7 @@ func (r *jsonWorkflowRepository) AddNodeToWorkflow(workflowID string, node model
 	return workflows[workflowIndex], nil
 }
 
-func (r *jsonWorkflowRepository) DeleteNodeFromWorkflow(workflowID string, taskID string) (model.Workflow, error) {
+func (r *jsonWorkflowRepository) DeleteNodeFromWorkflow(workflowID string, nodeName string) (model.Workflow, error) {
 	workflows, err := r.readCurrent()
 	if err != nil {
 		return model.Workflow{}, err
@@ -162,7 +162,7 @@ func (r *jsonWorkflowRepository) DeleteNodeFromWorkflow(workflowID string, taskI
 	workflow := workflows[workflowIndex]
 
 	newNodes := slices.DeleteFunc(workflow.Nodes, func(n model.Node) bool {
-		return n.TaskID == taskID
+		return n.Name == nodeName
 	})
 	if len(newNodes) == len(workflow.Nodes) {
 		return model.Workflow{}, model.ErrNotFound
