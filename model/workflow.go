@@ -4,7 +4,7 @@ import "time"
 
 type Node struct {
 	TaskID       string
-	Dependencies []*Node
+	Dependencies []string // TaskIDのリスト
 }
 
 type Workflow struct {

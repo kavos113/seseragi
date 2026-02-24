@@ -17,7 +17,7 @@ func ParseWorkflow(workflowInfo *WorkflowInfo, yamlPath string) (model.Workflow,
 		}
 		nodes = append(nodes, model.Node{
 			TaskID:       task.ID,
-			Dependencies: []*model.Node{},
+			Dependencies: []string{},
 		})
 	}
 
@@ -36,14 +36,7 @@ func ParseWorkflow(workflowInfo *WorkflowInfo, yamlPath string) (model.Workflow,
 				return model.Workflow{}, fmt.Errorf("dependency %s not found for node %s", depName, nodeName)
 			}
 
-			depNodeIndex := slices.IndexFunc(nodes, func(n model.Node) bool {
-				return n.TaskID == depNodeInfo.ID
-			})
-			if depNodeIndex == -1 {
-				return model.Workflow{}, fmt.Errorf("dependency node %s not found in nodes list", depNodeInfo.ID)
-			}
-
-			currentNode.Dependencies = append(currentNode.Dependencies, &nodes[depNodeIndex])
+			currentNode.Dependencies = append(currentNode.Dependencies, depNodeInfo.ID)
 		}
 	}
 

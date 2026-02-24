@@ -92,9 +92,9 @@ func (wr *WorkflowRunner) RunWorkflow(workflow model.Workflow, runNode func(mode
 
 	for _, nodeInfo := range nodes {
 		for _, dep := range nodeInfo.node.Dependencies {
-			depNodeInfo, ok := nodes[dep.TaskID]
+			depNodeInfo, ok := nodes[dep]
 			if !ok {
-				return fmt.Errorf("dependency task %s not found", dep.TaskID)
+				return fmt.Errorf("dependency task %s not found", dep)
 			}
 			nodeInfo.dependsOn = append(nodeInfo.dependsOn, depNodeInfo)
 		}

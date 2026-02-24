@@ -34,7 +34,7 @@ func TestParseWorkflow(t *testing.T) {
 			want: model.Workflow{
 				Name: "hello-workflow",
 				Nodes: []model.Node{
-					{TaskID: "task-id-1", Dependencies: []*model.Node{}},
+					{TaskID: "task-id-1", Dependencies: []string{}},
 				},
 			},
 			wantErr: false,
@@ -60,8 +60,8 @@ func TestParseWorkflow(t *testing.T) {
 			want: model.Workflow{
 				Name: "hello-workflow",
 				Nodes: []model.Node{
-					{TaskID: "task-id-1", Dependencies: []*model.Node{{TaskID: "task-id-2"}}},
-					{TaskID: "task-id-2", Dependencies: []*model.Node{}},
+					{TaskID: "task-id-1", Dependencies: []string{"task-id-2"}},
+					{TaskID: "task-id-2", Dependencies: []string{}},
 				},
 			},
 			wantErr: false,
@@ -91,9 +91,9 @@ func TestParseWorkflow(t *testing.T) {
 			want: model.Workflow{
 				Name: "hello-workflow",
 				Nodes: []model.Node{
-					{TaskID: "task-id-1", Dependencies: []*model.Node{{TaskID: "task-id-2"}, {TaskID: "task-id-3"}}},
-					{TaskID: "task-id-2", Dependencies: []*model.Node{}},
-					{TaskID: "task-id-3", Dependencies: []*model.Node{}},
+					{TaskID: "task-id-1", Dependencies: []string{"task-id-2", "task-id-3"}},
+					{TaskID: "task-id-2", Dependencies: []string{}},
+					{TaskID: "task-id-3", Dependencies: []string{}},
 				},
 			},
 			wantErr: false,
@@ -123,9 +123,9 @@ func TestParseWorkflow(t *testing.T) {
 			want: model.Workflow{
 				Name: "hello-workflow",
 				Nodes: []model.Node{
-					{TaskID: "task-id-1", Dependencies: []*model.Node{{TaskID: "task-id-2"}, {TaskID: "task-id-3"}}},
-					{TaskID: "task-id-3", Dependencies: []*model.Node{{TaskID: "task-id-2"}}},
-					{TaskID: "task-id-2", Dependencies: []*model.Node{}},
+					{TaskID: "task-id-1", Dependencies: []string{"task-id-2", "task-id-3"}},
+					{TaskID: "task-id-3", Dependencies: []string{"task-id-2"}},
+					{TaskID: "task-id-2", Dependencies: []string{}},
 				},
 			},
 			wantErr: false,
@@ -188,11 +188,8 @@ func TestParseWorkflow(t *testing.T) {
 				}
 
 				for j, gotDep := range gotNode.Dependencies {
-					wantDepIndex := slices.IndexFunc(wantNode.Dependencies, func(d *model.Node) bool {
-						return d.TaskID == gotDep.TaskID
-					})
-					if wantDepIndex == -1 {
-						t.Errorf("ParseWorkflow() got.Nodes[%v].Dependencies[%v] has unexpected TaskID = %v", wantNodeIndex, j, gotDep.TaskID)
+					if gotDep != wantNode.Dependencies[j] {
+						t.Errorf("ParseWorkflow() got.Nodes[%v].Dependencies[%v] = %v, want %v", wantNodeIndex, j, gotDep, wantNode.Dependencies[j])
 					}
 				}
 			}
