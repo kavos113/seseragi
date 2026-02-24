@@ -2,6 +2,7 @@ package json
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"slices"
@@ -33,7 +34,7 @@ func (r *jsonTaskRepository) readCurrent() ([]model.Task, error) {
 	}
 
 	var tasks []model.Task
-	err = json.NewDecoder(f).Decode(&tasks)	
+	err = json.NewDecoder(f).Decode(&tasks)
 	if err != nil {
 		return nil, err
 	}
@@ -71,6 +72,17 @@ func (r *jsonTaskRepository) CreateTask(task model.Task) (model.Task, error) {
 		return model.Task{}, err
 	}
 
+	if slices.ContainsFunc(tasks, func(t model.Task) bool {
+		return t.ID == task.ID
+	}) {
+		return model.Task{}, errors.New("task with the same ID already exists")
+	}
+	if slices.ContainsFunc(tasks, func(t model.Task) bool {
+		return t.Name == task.Name
+	}) {
+		return model.Task{}, errors.New("task with the same name already exists")
+	}
+
 	tasks = append(tasks, task)
 
 	err = r.write(tasks)
@@ -89,6 +101,22 @@ func (r *jsonTaskRepository) GetTaskByID(id string) (model.Task, error) {
 
 	taskIndex := slices.IndexFunc(tasks, func(t model.Task) bool {
 		return t.ID == id
+	})
+	if taskIndex == -1 {
+		return model.Task{}, model.ErrNotFound
+	}
+
+	return tasks[taskIndex], nil
+}
+
+func (r *jsonTaskRepository) GetTaskByName(name string) (model.Task, error) {
+	tasks, err := r.readCurrent()
+	if err != nil {
+		return model.Task{}, err
+	}
+
+	taskIndex := slices.IndexFunc(tasks, func(t model.Task) bool {
+		return t.Name == name
 	})
 	if taskIndex == -1 {
 		return model.Task{}, model.ErrNotFound
