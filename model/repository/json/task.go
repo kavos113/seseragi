@@ -146,6 +146,13 @@ func (r *jsonTaskRepository) UpdateTask(task model.Task) (model.Task, error) {
 		return model.Task{}, model.ErrNotFound
 	}
 
+	taskWithSameNameIndex := slices.IndexFunc(tasks, func(t model.Task) bool {
+		return t.Name == task.Name && t.ID != task.ID
+	})
+	if taskWithSameNameIndex != -1 {
+		return model.Task{}, errors.New("task with the same name already exists")
+	}
+
 	tasks[taskIndex] = task
 
 	err = r.write(tasks)
