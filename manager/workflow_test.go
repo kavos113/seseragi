@@ -201,6 +201,11 @@ func TestParseWorkflow(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
+			oldRepo := taskRepo
+			t.Cleanup(func() {
+				taskRepo = oldRepo
+			})
+
 			mockTaskRepo := mock_model.NewMockTaskRepository(ctrl)
 			tt.setupMock(mockTaskRepo)
 			taskRepo = mockTaskRepo
