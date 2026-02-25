@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os/exec"
 	"runtime"
-	"strings"
 	"time"
 
 	"github.com/kavos113/seseragi/internal/domain"
@@ -31,8 +30,6 @@ func (r *CommandTaskRunner) Run(node domain.Node, task domain.Task) error {
 	ctx, cancel := context.WithTimeout(context.Background(), r.Timeout)
 	defer cancel()
 
-	command := strings.Split(commandDef.Command, " ")
-
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "windows":
@@ -40,7 +37,7 @@ func (r *CommandTaskRunner) Run(node domain.Node, task domain.Task) error {
 	case "linux", "darwin":
 		cmd = exec.CommandContext(ctx, "sh", "-c", commandDef.Command)
 	default:
-		cmd = exec.CommandContext(ctx, command[0], command[1:]...)
+		return fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
 	}
 	cmd.Dir = commandDef.WorkingDir
 
