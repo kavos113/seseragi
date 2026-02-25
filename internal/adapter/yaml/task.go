@@ -59,12 +59,22 @@ func LoadTaskInfoFromYAML(yamlData []byte, yamlPath string) (*domain.Task, error
 		if err != nil {
 			return nil, err
 		}
+
+		workingDir := details.WorkingDir
+		if !filepath.IsAbs(details.WorkingDir) {
+			absYaml, err := filepath.Abs(yamlPath)
+			if err != nil {
+				return nil, err
+			}
+			workingDir = filepath.Join(filepath.Dir(absYaml), details.WorkingDir)
+		}
+
 		return &domain.Task{
 			Name:     taskInfo.Name,
 			YamlPath: yamlPath,
 			TaskDef: domain.CommandTaskDefinition{
 				Command:    details.Command,
-				WorkingDir: details.WorkingDir,
+				WorkingDir: workingDir,
 			},
 		}, nil
 
