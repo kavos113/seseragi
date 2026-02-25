@@ -41,7 +41,13 @@ func (c *Commands) AddTask(yamlPath string) error {
 		}
 	}
 
-	return c.tu.AddTask(*task, providerSelector)
+	err = c.tu.AddTask(*task, providerSelector)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Task '%s' added successfully with ID: %s\n", task.Name, task.ID)
+	return nil
 }
 
 func (c *Commands) ListTasks() error {
