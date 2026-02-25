@@ -1,3 +1,4 @@
 name: "rs-sample"
 description: "Rust Sample Task"
+type: docker
 context: .

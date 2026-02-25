@@ -4,14 +4,11 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    branches: [main, "fix/architecture"]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        directories: ["./manager", "./manager-client/cli", "./runner", "./model"]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,8 +20,6 @@ jobs:
 
       - name: Install dependencies
         run: go mod tidy
-        working-directory: ${{ matrix.directories }}
 
       - name: Run tests
         run: go test -v ./...
-        working-directory: ${{ matrix.directories }}
