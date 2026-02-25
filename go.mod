@@ -3,6 +3,7 @@ module github.com/kavos113/seseragi
 go 1.25.1
 
 require (
+	github.com/google/uuid v1.6.0
 	github.com/moby/moby/api v1.53.0
 	github.com/moby/moby/client v0.2.2
 	github.com/stretchr/testify v1.11.1
