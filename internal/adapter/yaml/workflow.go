@@ -16,7 +16,7 @@ type workflowInfo struct {
 	Nodes       map[string]nodeInfo `yaml:"nodes"`
 }
 
-// return ID, node.TaskID is empty
+// return ID, is empty
 func LoadWorkflowInfoFromYAML(yamlData []byte, yamlPath string) (*domain.Workflow, error) {
 	var workflowInfo workflowInfo
 	err := yaml.Unmarshal(yamlData, &workflowInfo)
