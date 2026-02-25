@@ -35,6 +35,7 @@ func (uc *workflowUseCase) AddWorkflow(workflow domain.Workflow) error {
 
 	id := uc.idGenerator.GenerateID()
 	workflow.ID = id
+	fmt.Printf("workflow: %+v\n", workflow)
 	if _, err := uc.workflowRepo.CreateWorkflow(workflow); err != nil {
 		return err
 	}

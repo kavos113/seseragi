@@ -6,6 +6,7 @@ import (
 	"github.com/kavos113/seseragi/internal/domain"
 	"github.com/kavos113/seseragi/internal/domain/mock_domain"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
 func TestAddWorkflow(t *testing.T) {
@@ -54,7 +55,10 @@ func TestAddWorkflow(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := &mock_domain.MockWorkflowRepository{}
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockRepo := mock_domain.NewMockWorkflowRepository(ctrl)
 			mockIDProvider := newTestIDGenerator("1", "2", "3", "4", "5")
 			tt.setupMock(mockRepo)
 
