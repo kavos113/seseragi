@@ -11,8 +11,8 @@ $coverageDir = Join-Path (Get-Location) "cover"
 $getCover = $cover -ne $null -and $cover -eq "cover"
 
 if ($getCover) {
-    $coverFile = Join-Path $coverageDir "$dir.coverprofile"
-    $htmlFile = Join-Path $coverageDir "$dir.coverage.html"
+    $coverFile = Join-Path $coverageDir "coverage.out"
+    $htmlFile = Join-Path $coverageDir "coverage.html"
 
     go test ./... -v -covermode=atomic -coverprofile="$coverFile"
     go tool cover -html="$coverFile" -o "$htmlFile"
