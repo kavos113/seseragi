@@ -10,20 +10,20 @@ type Task struct {
 type TaskType string
 
 const (
-	TaskTypeContainer TaskType = "container"
-	TaskTypeCommand   TaskType = "command"
+	TaskTypeDocker  TaskType = "docker"
+	TaskTypeCommand TaskType = "command"
 )
 
 type TaskDefinition interface {
 	Type() TaskType
 }
 
-type ContainerTaskDefinition struct {
+type DockerTaskDefinition struct {
 	ImageName string
 }
 
-func (c ContainerTaskDefinition) Type() TaskType {
-	return TaskTypeContainer
+func (c DockerTaskDefinition) Type() TaskType {
+	return TaskTypeDocker
 }
 
 type CommandTaskDefinition struct {
