@@ -21,7 +21,7 @@ type workflowRunUseCase struct {
 	idGenerator     IDGenerator
 }
 
-func NewWorkflowRunUseCase(workflowRepo domain.WorkflowRepository, workflowRunRepo domain.WorkflowRunRepository, runner domain.NodeRunner, idGenerator IDGenerator) WorkflowRunUseCase {
+func NewWorkflowRunUseCase(workflowRepo domain.WorkflowRepository, workflowRunRepo domain.WorkflowRunRepository, idGenerator IDGenerator) WorkflowRunUseCase {
 	return &workflowRunUseCase{
 		workflowRepo:    workflowRepo,
 		workflowRunRepo: workflowRunRepo,
