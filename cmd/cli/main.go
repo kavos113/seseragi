@@ -48,18 +48,21 @@ func main() {
 	case "task":
 		err := cmds.HandleTaskCommand(os.Args[2:])
 		if err != nil {
+			fmt.Printf("Error handling task command: %v\n", err)
 			os.Exit(1)
 		}
 
 	case "workflow":
 		err := cmds.HandleWorkflowCommand(os.Args[2:])
 		if err != nil {
+			fmt.Printf("Error handling workflow command: %v\n", err)
 			os.Exit(1)
 		}
 
 	case "run":
 		err := cmds.HandleRunCommand(os.Args[2:])
 		if err != nil {
+			fmt.Printf("Error handling run command: %v\n", err)
 			os.Exit(1)
 		}
 

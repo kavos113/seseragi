@@ -1,3 +1,4 @@
 name: "go-hello"
 description: "Go Hello Task"
+type: docker
 context: .
