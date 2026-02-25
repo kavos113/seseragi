@@ -166,3 +166,41 @@ func (mr *MockTaskRepositoryMockRecorder) UpdateTask(task any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTask", reflect.TypeOf((*MockTaskRepository)(nil).UpdateTask), task)
 }
+
+// MockTaskProvider is a mock of TaskProvider interface.
+type MockTaskProvider struct {
+	ctrl     *gomock.Controller
+	recorder *MockTaskProviderMockRecorder
+	isgomock struct{}
+}
+
+// MockTaskProviderMockRecorder is the mock recorder for MockTaskProvider.
+type MockTaskProviderMockRecorder struct {
+	mock *MockTaskProvider
+}
+
+// NewMockTaskProvider creates a new mock instance.
+func NewMockTaskProvider(ctrl *gomock.Controller) *MockTaskProvider {
+	mock := &MockTaskProvider{ctrl: ctrl}
+	mock.recorder = &MockTaskProviderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockTaskProvider) EXPECT() *MockTaskProviderMockRecorder {
+	return m.recorder
+}
+
+// BuildTask mocks base method.
+func (m *MockTaskProvider) BuildTask(task domain.Task) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BuildTask", task)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BuildTask indicates an expected call of BuildTask.
+func (mr *MockTaskProviderMockRecorder) BuildTask(task any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildTask", reflect.TypeOf((*MockTaskProvider)(nil).BuildTask), task)
+}
