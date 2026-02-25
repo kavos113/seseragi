@@ -14,7 +14,7 @@ type NodeData struct {
 
 type InputData []NodeData
 
-func (d InputData) Get(name string, out *any) error {
+func (d InputData) Get(name string, out any) error {
 	for _, node := range d {
 		if node.Name == name {
 			return json.Unmarshal(node.Data, out)
