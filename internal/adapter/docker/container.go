@@ -20,7 +20,6 @@ func (c *Client) RunContainer(image string) error {
 
 	createOptions := client.ContainerCreateOptions{
 		Config: config,
-		Name:   image + "-container",
 	}
 
 	resp, err := c.client.ContainerCreate(ctx, createOptions)
