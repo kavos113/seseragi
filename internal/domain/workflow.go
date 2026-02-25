@@ -4,7 +4,7 @@ import "time"
 
 type Node struct {
 	Name         string
-	TaskID       string
+	TaskName     string
 	Dependencies []string // Nameのリスト
 }
 

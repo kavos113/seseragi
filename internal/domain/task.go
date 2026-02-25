@@ -19,7 +19,8 @@ type TaskDefinition interface {
 }
 
 type DockerTaskDefinition struct {
-	ImageName string
+	ImageName  string
+	ContextDir string
 }
 
 func (c DockerTaskDefinition) Type() TaskType {
