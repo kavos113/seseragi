@@ -6,4 +6,4 @@ trigger:
 
 nodes:
   go-hello:
-    id: "98fe10ad-a326-4094-b5a6-be0fd02a5683"
+    name: "go-hello"
