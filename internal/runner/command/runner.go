@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -43,6 +44,7 @@ func (r *CommandTaskRunner) Run(node domain.Node, task domain.Task, workflowRunI
 	cmd.Dir = commandDef.WorkingDir
 
 	dataDir := domain.GetDataDir(workflowRunID)
+	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, fmt.Sprintf("WORKFLOW_INPUT_PATH=%s", filepath.Join(dataDir, domain.GetNodeInputPath(node.Name))))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("WORKFLOW_OUTPUT_PATH=%s", filepath.Join(dataDir, domain.GetNodeOutputPath(node.Name))))
 
