@@ -15,13 +15,13 @@ func NewDockerNodeRunner(client *docker.Client) *DockerNodeRunner {
 	return &DockerNodeRunner{client: client}
 }
 
-func (r *DockerNodeRunner) Run(node domain.Node, task domain.Task) error {
+func (r *DockerNodeRunner) Run(node domain.Node, task domain.Task, workflowRunID string) error {
 	dockerDef, ok := task.TaskDef.(domain.DockerTaskDefinition)
 	if !ok {
 		return errors.New("invalid task definition type for DockerNodeRunner")
 	}
 
-	if err := r.client.RunContainer(dockerDef.ImageName); err != nil {
+	if err := r.client.RunContainer(dockerDef.ImageName, domain.GetDataDir(workflowRunID), node.Name); err != nil {
 		return err
 	}
 

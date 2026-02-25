@@ -1,11 +1,22 @@
 package domain
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Node struct {
 	Name         string
 	TaskName     string
 	Dependencies []string // Nameのリスト
+}
+
+func GetNodeInputPath(nodeName string) string {
+	return fmt.Sprintf("%s_input.json", nodeName)
+}
+
+func GetNodeOutputPath(nodeName string) string {
+	return fmt.Sprintf("%s_output.json", nodeName)
 }
 
 type Workflow struct {
