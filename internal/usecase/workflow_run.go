@@ -18,13 +18,15 @@ type WorkflowRunUseCase interface {
 type workflowRunUseCase struct {
 	workflowRepo    domain.WorkflowRepository
 	workflowRunRepo domain.WorkflowRunRepository
+	taskRepo        domain.TaskRepository
 	idGenerator     IDGenerator
 }
 
-func NewWorkflowRunUseCase(workflowRepo domain.WorkflowRepository, workflowRunRepo domain.WorkflowRunRepository, idGenerator IDGenerator) WorkflowRunUseCase {
+func NewWorkflowRunUseCase(workflowRepo domain.WorkflowRepository, workflowRunRepo domain.WorkflowRunRepository, taskRepo domain.TaskRepository, idGenerator IDGenerator) WorkflowRunUseCase {
 	return &workflowRunUseCase{
 		workflowRepo:    workflowRepo,
 		workflowRunRepo: workflowRunRepo,
+		taskRepo:        taskRepo,
 		idGenerator:     idGenerator,
 	}
 }
@@ -87,7 +89,12 @@ func (uc *workflowRunUseCase) RunWorkflow(workflowID string, runnerSelector func
 			}
 
 			fmt.Printf("Running node: %s\n", nr.node.Name)
-			nr.err = nr.runner.Run(nr.node)
+			task, err := uc.taskRepo.GetTaskByName(nr.node.TaskName)
+			if err != nil {
+				nr.err = fmt.Errorf("failed to get task for node %s: %w", nr.node.Name, err)
+				return
+			}
+			nr.err = nr.runner.Run(nr.node, task)
 		}(nodeRun)
 	}
 

@@ -8,20 +8,14 @@ import (
 )
 
 type DockerNodeRunner struct {
-	client   *docker.Client
-	taskRepo domain.TaskRepository
+	client *docker.Client
 }
 
-func NewDockerNodeRunner(client *docker.Client, taskRepo domain.TaskRepository) *DockerNodeRunner {
-	return &DockerNodeRunner{client: client, taskRepo: taskRepo}
+func NewDockerNodeRunner(client *docker.Client) *DockerNodeRunner {
+	return &DockerNodeRunner{client: client}
 }
 
-func (r *DockerNodeRunner) Run(node domain.Node) error {
-	task, err := r.taskRepo.GetTaskByName(node.TaskName)
-	if err != nil {
-		return err
-	}
-
+func (r *DockerNodeRunner) Run(node domain.Node, task domain.Task) error {
 	dockerDef, ok := task.TaskDef.(domain.DockerTaskDefinition)
 	if !ok {
 		return errors.New("invalid task definition type for DockerNodeRunner")
