@@ -12,7 +12,7 @@ type Message struct {
 
 func askName(d seseragi.InputData) (seseragi.Empty, error) {
 	var message Message
-	if err := d.Get("question", &message); err != nil {
+	if err := d.Get("ask-name", &message); err != nil {
 		return seseragi.Empty{}, err
 	}
 	fmt.Printf("Question: %s\n", message.Question)
