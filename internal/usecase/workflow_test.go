@@ -51,6 +51,116 @@ func TestAddWorkflow(t *testing.T) {
 			},
 			wantErr: nil,
 		},
+		{
+			name: "success: workflow with dependencies",
+			workflow: domain.Workflow{
+				Name: "hello workflow",
+				Nodes: []domain.Node{
+					{Name: "node1", Dependencies: []string{}},
+					{Name: "node2", Dependencies: []string{"node1"}},
+				},
+			},
+			setupMock: func(repo *mock_domain.MockWorkflowRepository) {
+				repo.EXPECT().
+					CreateWorkflow(domain.Workflow{
+						ID:   "1",
+						Name: "hello workflow",
+						Nodes: []domain.Node{
+							{Name: "node1", Dependencies: []string{}},
+							{Name: "node2", Dependencies: []string{"node1"}},
+						},
+					}).
+					Return(domain.Workflow{
+						ID:   "1",
+						Name: "hello workflow",
+						Nodes: []domain.Node{
+							{Name: "node1", Dependencies: []string{}},
+							{Name: "node2", Dependencies: []string{"node1"}},
+						},
+					}, nil)
+			},
+			wantWorkflow: domain.Workflow{
+				ID:   "1",
+				Name: "hello workflow",
+				Nodes: []domain.Node{
+					{Name: "node1", Dependencies: []string{}},
+					{Name: "node2", Dependencies: []string{"node1"}},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "success: multiple dependencies",
+			workflow: domain.Workflow{
+				Name: "hello workflow",
+				Nodes: []domain.Node{
+					{Name: "node1", Dependencies: []string{}},
+					{Name: "node2", Dependencies: []string{"node1"}},
+					{Name: "node3", Dependencies: []string{"node1"}},
+					{Name: "node4", Dependencies: []string{"node2", "node3"}},
+				},
+			},
+			setupMock: func(repo *mock_domain.MockWorkflowRepository) {
+				repo.EXPECT().
+					CreateWorkflow(domain.Workflow{
+						ID:   "1",
+						Name: "hello workflow",
+						Nodes: []domain.Node{
+							{Name: "node1", Dependencies: []string{}},
+							{Name: "node2", Dependencies: []string{"node1"}},
+							{Name: "node3", Dependencies: []string{"node1"}},
+							{Name: "node4", Dependencies: []string{"node2", "node3"}},
+						},
+					}).
+					Return(domain.Workflow{
+						ID:   "1",
+						Name: "hello workflow",
+						Nodes: []domain.Node{
+							{Name: "node1", Dependencies: []string{}},
+							{Name: "node2", Dependencies: []string{"node1"}},
+							{Name: "node3", Dependencies: []string{"node1"}},
+							{Name: "node4", Dependencies: []string{"node2", "node3"}},
+						},
+					}, nil)
+			},
+			wantWorkflow: domain.Workflow{
+				ID:   "1",
+				Name: "hello workflow",
+				Nodes: []domain.Node{
+					{Name: "node1", Dependencies: []string{}},
+					{Name: "node2", Dependencies: []string{"node1"}},
+					{Name: "node3", Dependencies: []string{"node1"}},
+					{Name: "node4", Dependencies: []string{"node2", "node3"}},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "failure: circular dependency",
+			workflow: domain.Workflow{
+				Name: "circular workflow",
+				Nodes: []domain.Node{
+					{Name: "node1", Dependencies: []string{"node3"}},
+					{Name: "node2", Dependencies: []string{"node1"}},
+					{Name: "node3", Dependencies: []string{"node2"}},
+				},
+			},
+			setupMock: func(repo *mock_domain.MockWorkflowRepository) {},
+			wantWorkflow: domain.Workflow{},
+			wantErr:      ErrWorkflowCircularDependency,
+		},
+		{
+			name: "failure: missing dependency",
+			workflow: domain.Workflow{
+				Name: "missing dependency workflow",
+				Nodes: []domain.Node{
+					{Name: "node1", Dependencies: []string{"node2"}},
+				},
+			},
+			setupMock: func(repo *mock_domain.MockWorkflowRepository) {},
+			wantWorkflow: domain.Workflow{},
+			wantErr:      ErrWorkflowMissingDependency,
+		},
 	}
 
 	for _, tt := range tests {
