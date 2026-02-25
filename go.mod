@@ -3,8 +3,8 @@ module github.com/kavos113/seseragi
 go 1.25.1
 
 require (
-	github.com/kavos113/seseragi/model v0.0.0-20260225052509-40edc82aba71
 	github.com/stretchr/testify v1.11.1
+	go.uber.org/mock v0.6.0
 )
 
 require (
