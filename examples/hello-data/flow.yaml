@@ -1,0 +1,13 @@
+name: hello-data
+description: "A simple data example"
+
+trigger:
+  type: "manual"
+
+nodes:
+  ask-name:
+    name: "ask-name"
+  answer-name:
+    name: "answer-name"
+    dependencies:
+      - ask-name

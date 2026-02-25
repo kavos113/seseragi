@@ -5,6 +5,8 @@ import (
 	"os"
 )
 
+type Empty struct{}
+
 func Run[I any, O any](handler func(I) (O, error)) {
 	inPath := os.Getenv("WORKFLOW_INPUT_PATH")
 	outPath := os.Getenv("WORKFLOW_OUTPUT_PATH")
