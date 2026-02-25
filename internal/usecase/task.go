@@ -5,26 +5,24 @@ import (
 )
 
 type TaskUseCase interface {
-	AddTask(task domain.Task) error
+	AddTask(task domain.Task, providerSelector func(domain.TaskDefinition) domain.TaskProvider) error
 	ListTasks() ([]domain.Task, error)
 	DeleteTask(taskID string) error
 }
 
 type taskUseCase struct {
-	taskRepo     domain.TaskRepository
-	taskProvider domain.TaskProvider
-	idGenerator  IDGenerator
+	taskRepo    domain.TaskRepository
+	idGenerator IDGenerator
 }
 
-func NewTaskUseCase(taskRepo domain.TaskRepository, taskProvider domain.TaskProvider, idGenerator IDGenerator) TaskUseCase {
+func NewTaskUseCase(taskRepo domain.TaskRepository, idGenerator IDGenerator) TaskUseCase {
 	return &taskUseCase{
-		taskRepo:     taskRepo,
-		taskProvider: taskProvider,
-		idGenerator:  idGenerator,
+		taskRepo:    taskRepo,
+		idGenerator: idGenerator,
 	}
 }
 
-func (uc *taskUseCase) AddTask(task domain.Task) error {
+func (uc *taskUseCase) AddTask(task domain.Task, providerSelector func(domain.TaskDefinition) domain.TaskProvider) error {
 	id := uc.idGenerator.GenerateID()
 	task.ID = id
 
@@ -35,7 +33,8 @@ func (uc *taskUseCase) AddTask(task domain.Task) error {
 		}
 	}
 
-	if err := uc.taskProvider.BuildTask(task); err != nil {
+	provider := providerSelector(task.TaskDef)
+	if err := provider.BuildTask(task); err != nil {
 		return err
 	}
 

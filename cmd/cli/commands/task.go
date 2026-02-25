@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 
 	"github.com/kavos113/seseragi/internal/adapter/yaml"
+	"github.com/kavos113/seseragi/internal/domain"
+	"github.com/kavos113/seseragi/internal/runner/command"
 )
 
 func (c *Commands) AddTask(yamlPath string) error {
@@ -25,7 +27,21 @@ func (c *Commands) AddTask(yamlPath string) error {
 		return err
 	}
 
-	return c.tu.AddTask(*task)
+	providerSelector := func(taskDef domain.TaskDefinition) domain.TaskProvider {
+		switch taskDef.Type() {
+		case domain.TaskTypeDocker:
+			return c.dp
+
+		case domain.TaskTypeCommand:
+			return command.NewCommandTaskProvider()
+
+		default:
+			fmt.Printf("No provider available for task type %s in task definition\n", taskDef.Type())
+			return nil
+		}
+	}
+
+	return c.tu.AddTask(*task, providerSelector)
 }
 
 func (c *Commands) ListTasks() error {

@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -11,6 +12,7 @@ type WorkflowUseCase interface {
 	AddWorkflow(workflow domain.Workflow) (domain.Workflow, error)
 	ListWorkflows() ([]domain.Workflow, error)
 	DeleteWorkflow(workflowID string) error
+	GetTaskTypeFromNode(node domain.Node) (domain.TaskType, error)
 }
 
 type workflowUseCase struct {
@@ -56,6 +58,22 @@ func (uc *workflowUseCase) ListWorkflows() ([]domain.Workflow, error) {
 
 func (uc *workflowUseCase) DeleteWorkflow(workflowID string) error {
 	return uc.workflowRepo.DeleteWorkflow(workflowID)
+}
+
+func (uc *workflowUseCase) GetTaskTypeFromNode(node domain.Node) (domain.TaskType, error) {
+	task, err := uc.taskRepo.GetTaskByName(node.TaskName)
+	if err != nil {
+		return "", fmt.Errorf("%w: node %s references missing task %s", ErrWorkflowMissingTask, node.Name, node.TaskName)
+	}
+
+	switch task.TaskDef.Type() {
+	case domain.TaskTypeDocker:
+		return domain.TaskTypeDocker, nil
+	case domain.TaskTypeCommand:
+		return domain.TaskTypeCommand, nil
+	default:
+		return "", errors.New("unknown task type for node " + node.Name)
+	}
 }
 
 func checkCircularDependency(nodes []domain.Node) error {

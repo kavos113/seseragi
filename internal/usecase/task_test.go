@@ -10,15 +10,16 @@ import (
 
 func TestAddTask(t *testing.T) {
 	tests := []struct {
-		name      string
-		task      domain.Task
-		setupMock func(repo *mock_domain.MockTaskRepository, provider *mock_domain.MockTaskProvider)
-		wantErr   bool
+		name          string
+		task          domain.Task
+		setupMock     func(repo *mock_domain.MockTaskRepository)
+		setupProvider func(provider *mock_domain.MockTaskProvider)
+		wantErr       bool
 	}{
 		{
 			name: "success",
 			task: domain.Task{Name: "Test Task"},
-			setupMock: func(repo *mock_domain.MockTaskRepository, provider *mock_domain.MockTaskProvider) {
+			setupMock: func(repo *mock_domain.MockTaskRepository) {
 				repo.EXPECT().
 					CreateTask(domain.Task{
 						ID:   "generated-id",
@@ -28,6 +29,8 @@ func TestAddTask(t *testing.T) {
 						ID:   "generated-id",
 						Name: "Test Task",
 					}, nil)
+			},
+			setupProvider: func(provider *mock_domain.MockTaskProvider) {
 				provider.EXPECT().
 					BuildTask(domain.Task{
 						ID:   "generated-id",
@@ -45,7 +48,7 @@ func TestAddTask(t *testing.T) {
 					ContextDir: "./context",
 				},
 			},
-			setupMock: func(repo *mock_domain.MockTaskRepository, provider *mock_domain.MockTaskProvider) {
+			setupMock: func(repo *mock_domain.MockTaskRepository) {
 				expectedTask := domain.Task{
 					ID:   "generated-id",
 					Name: "Docker Task",
@@ -57,6 +60,16 @@ func TestAddTask(t *testing.T) {
 				repo.EXPECT().
 					CreateTask(expectedTask).
 					Return(expectedTask, nil)
+			},
+			setupProvider: func(provider *mock_domain.MockTaskProvider) {
+				expectedTask := domain.Task{
+					ID:   "generated-id",
+					Name: "Docker Task",
+					TaskDef: domain.DockerTaskDefinition{
+						ImageName:  "generated-id",
+						ContextDir: "./context",
+					},
+				}
 				provider.EXPECT().
 					BuildTask(expectedTask).
 					Return(nil)
@@ -71,13 +84,16 @@ func TestAddTask(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockRepo := mock_domain.NewMockTaskRepository(ctrl)
-			mockProvider := mock_domain.NewMockTaskProvider(ctrl)
 			mockIDGen := newTestIDGenerator("generated-id")
 
-			tt.setupMock(mockRepo, mockProvider)
+			tt.setupMock(mockRepo)
 
-			uc := NewTaskUseCase(mockRepo, mockProvider, mockIDGen)
-			err := uc.AddTask(tt.task)
+			uc := NewTaskUseCase(mockRepo, mockIDGen)
+			err := uc.AddTask(tt.task, func(taskDef domain.TaskDefinition) domain.TaskProvider {
+				mockProvider := mock_domain.NewMockTaskProvider(ctrl)
+				tt.setupProvider(mockProvider)
+				return mockProvider
+			})
 			if err != nil {
 				if !tt.wantErr {
 					t.Errorf("AddTask() error = %v, wantErr %v", err, tt.wantErr)
