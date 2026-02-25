@@ -25,7 +25,11 @@ func (c *Commands) AddWorkflow(yamlPath string) error {
 	}
 
 	_, err = c.wu.AddWorkflow(*workflow)
-	return err
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Workflow '%s' added successfully with ID: %s\n", workflow.Name, workflow.ID)
+	return nil
 }
 
 func (c *Commands) ListWorkflows() error {

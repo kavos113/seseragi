@@ -21,7 +21,7 @@ func (p *DockerTaskProvider) BuildTask(task domain.Task) error {
 		return errors.New("invalid task definition type for DockerTaskProvider")
 	}
 
-	if err := p.client.BuildImage(task.Name, dockerDef.ContextDir); err != nil {
+	if err := p.client.BuildImage(task.ID, dockerDef.ContextDir); err != nil {
 		return err
 	}
 
