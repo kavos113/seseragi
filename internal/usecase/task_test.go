@@ -37,6 +37,32 @@ func TestAddTask(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "success: docker task fills image name",
+			task: domain.Task{
+				Name: "Docker Task",
+				TaskDef: domain.DockerTaskDefinition{
+					ContextDir: "./context",
+				},
+			},
+			setupMock: func(repo *mock_domain.MockTaskRepository, provider *mock_domain.MockTaskProvider) {
+				expectedTask := domain.Task{
+					ID:   "generated-id",
+					Name: "Docker Task",
+					TaskDef: domain.DockerTaskDefinition{
+						ImageName:  "generated-id",
+						ContextDir: "./context",
+					},
+				}
+				repo.EXPECT().
+					CreateTask(expectedTask).
+					Return(expectedTask, nil)
+				provider.EXPECT().
+					BuildTask(expectedTask).
+					Return(nil)
+			},
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {

@@ -27,6 +27,14 @@ func NewTaskUseCase(taskRepo domain.TaskRepository, taskProvider domain.TaskProv
 func (uc *taskUseCase) AddTask(task domain.Task) error {
 	id := uc.idGenerator.GenerateID()
 	task.ID = id
+
+	if dockerDef, ok := task.TaskDef.(domain.DockerTaskDefinition); ok {
+		task.TaskDef = domain.DockerTaskDefinition{
+			ImageName:  id,
+			ContextDir: dockerDef.ContextDir,
+		}
+	}
+
 	if err := uc.taskProvider.BuildTask(task); err != nil {
 		return err
 	}
