@@ -59,14 +59,15 @@ path: "task.yaml"
 name: "go-hello"
 description: "Go Hello Task"
 type: "command"
-context: .
+command: "echo Hello"
+working_dir: .
 `),
 			yamlPath: "task.yaml",
 			want: &domain.Task{
 				Name:     "go-hello",
 				YamlPath: "task.yaml",
 				TaskDef: domain.CommandTaskDefinition{
-					Command:    "",
+					Command:    "echo Hello",
 					WorkingDir: ".",
 				},
 			},
