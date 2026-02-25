@@ -24,11 +24,11 @@ func (c *Commands) AddWorkflow(yamlPath string) error {
 		return err
 	}
 
-	_, err = c.wu.AddWorkflow(*workflow)
+	added, err := c.wu.AddWorkflow(*workflow)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Workflow '%s' added successfully with ID: %s\n", workflow.Name, workflow.ID)
+	fmt.Printf("Workflow '%s' added successfully with ID: %s\n", workflow.Name, added.ID)
 	return nil
 }
 
