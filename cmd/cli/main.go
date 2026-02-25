@@ -36,13 +36,13 @@ func main() {
 	idGenerator := usecase.NewUUIDGenerator()
 
 	dockerProvider := dockerr.NewDockerTaskProvider(dc)
-	dockerRunner := dockerr.NewDockerNodeRunner(dc, taskRepo)
+	dockerRunner := dockerr.NewDockerNodeRunner(dc)
 
-	taskUseCase := usecase.NewTaskUseCase(taskRepo, dockerProvider, idGenerator)
+	taskUseCase := usecase.NewTaskUseCase(taskRepo, idGenerator)
 	workflowUseCase := usecase.NewWorkflowUseCase(workflowRepo, taskRepo, idGenerator)
-	workflowRunUseCase := usecase.NewWorkflowRunUseCase(workflowRepo, workflowRunRepo, idGenerator)
+	workflowRunUseCase := usecase.NewWorkflowRunUseCase(workflowRepo, workflowRunRepo, taskRepo, idGenerator)
 
-	cmds := commands.NewCommands(taskUseCase, workflowUseCase, workflowRunUseCase, dockerRunner)
+	cmds := commands.NewCommands(taskUseCase, workflowUseCase, workflowRunUseCase, dockerRunner, dockerProvider)
 
 	switch os.Args[1] {
 	case "task":

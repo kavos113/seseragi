@@ -1,0 +1,5 @@
+name: "echo-command"
+description: "A simple task that echoes a message"
+type: command
+working_dir: "."
+command: echo "Hello, Seseragi!"

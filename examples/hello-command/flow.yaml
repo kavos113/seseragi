@@ -1,0 +1,6 @@
+name: "hello-command"
+description: "A simple task that prints 'Hello, World!'"
+
+nodes:
+  echo-command:
+    name: echo-command

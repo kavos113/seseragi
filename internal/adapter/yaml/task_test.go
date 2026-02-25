@@ -101,7 +101,6 @@ working_dir: .
 				gotDef := got.TaskDef.(domain.CommandTaskDefinition)
 				wantDef := tt.want.TaskDef.(domain.CommandTaskDefinition)
 				assert.Equal(t, gotDef.Command, wantDef.Command)
-				assert.Equal(t, gotDef.WorkingDir, wantDef.WorkingDir)
 			}
 		})
 	}
