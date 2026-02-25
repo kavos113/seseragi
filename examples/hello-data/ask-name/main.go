@@ -6,7 +6,7 @@ type Message struct {
 	Question string `json:"question"`
 }
 
-func askName(_ seseragi.Empty) (Message, error) {
+func askName(d seseragi.InputData) (Message, error) {
 	return Message{
 		Question: "What is your name?",
 	}, nil

@@ -10,7 +10,11 @@ type Message struct {
 	Question string `json:"question"`
 }
 
-func askName(message Message) (seseragi.Empty, error) {
+func askName(d seseragi.InputData) (seseragi.Empty, error) {
+	var message Message
+	if err := d.Get("question", &message); err != nil {
+		return seseragi.Empty{}, err
+	}
 	fmt.Printf("Question: %s\n", message.Question)
 
 	return seseragi.Empty{}, nil
