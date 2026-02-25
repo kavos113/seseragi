@@ -1,8 +1,10 @@
 package usecase
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
@@ -71,6 +73,12 @@ func (uc *workflowRunUseCase) RunWorkflow(workflowID string, runnerSelector func
 		}
 	}
 
+	dataDir := domain.GetDataDir(run.ID)
+	if err := os.MkdirAll(dataDir, 0755); err != nil {
+		return fmt.Errorf("failed to create data directory: %w", err)
+	}
+	defer os.RemoveAll(dataDir)
+
 	var wg sync.WaitGroup
 	wg.Add(len(nodes))
 
@@ -86,6 +94,11 @@ func (uc *workflowRunUseCase) RunWorkflow(workflowID string, runnerSelector func
 					nr.err = errors.New("dependency failed: " + dep.node.Name)
 					return
 				}
+			}
+
+			if err := uc.collectOutputs(nr); err != nil {
+				nr.err = fmt.Errorf("failed to collect outputs for node %s: %w", nr.node.Name, err)
+				return
 			}
 
 			fmt.Printf("Running node: %s\n", nr.node.Name)
@@ -113,6 +126,44 @@ func (uc *workflowRunUseCase) RunWorkflow(workflowID string, runnerSelector func
 	run.Status = domain.WorkflowStatusCompleted
 	if _, err := uc.workflowRunRepo.CreateWorkflowRun(run); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+type NodeData struct {
+	Name string          `json:"name"`
+	Data json.RawMessage `json:"data"`
+}
+
+type InputData []NodeData
+
+// _output.json を結合して _input.json を作る. すべてのdependsOnが成功していることが前提
+func (uc *workflowRunUseCase) collectOutputs(noderun *NodeRun) error {
+	inputData := InputData{}
+
+	for _, dep := range noderun.dependsOn {
+		outputPath := domain.GetNodeOutputPath(dep.node.Name)
+
+		outBytes, err := os.ReadFile(outputPath)
+		if err != nil {
+			return fmt.Errorf("failed to read output for node %s: %w", dep.node.Name, err)
+		}
+
+		inputData = append(inputData, NodeData{
+			Name: dep.node.Name,
+			Data: outBytes,
+		})
+	}
+
+	inputBytes, err := json.Marshal(inputData)
+	if err != nil {
+		return fmt.Errorf("failed to marshal input data for node %s: %w", noderun.node.Name, err)
+	}
+
+	inputPath := domain.GetNodeInputPath(noderun.node.Name)
+	if err := os.WriteFile(inputPath, inputBytes, 0644); err != nil {
+		return fmt.Errorf("failed to write input file for node %s: %w", noderun.node.Name, err)
 	}
 
 	return nil
