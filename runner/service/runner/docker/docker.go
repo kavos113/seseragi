@@ -1,32 +1,34 @@
-package service
+package docker
 
 import (
 	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"slices"
 
+	"github.com/kavos113/seseragi/model"
+	"github.com/kavos113/seseragi/runner/service"
 	"github.com/moby/moby/api/pkg/stdcopy"
 	"github.com/moby/moby/api/types/container"
 	"github.com/moby/moby/client"
 )
 
-type DockerClient struct {
-	client  *client.Client
-	running []string
+type DockerRunner struct {
+	client      *client.Client
+	taskManager *service.TaskManager
 }
 
-func NewDockerClient() (*DockerClient, error) {
-	cli, err := client.New(client.FromEnv, client.WithAPIVersionFromEnv())
-	if err != nil {
-		return nil, err
-	}
-	return &DockerClient{client: cli}, nil
+func NewDockerRunner(client *client.Client, taskManager *service.TaskManager) (*DockerRunner, error) {
+	return &DockerRunner{client: client, taskManager: taskManager}, nil
 }
 
-func (dc *DockerClient) RunContainer(image string) error {
+func (dc *DockerRunner) Run(node model.Node) error {
 	ctx := context.Background()
+
+	image, err := dc.taskManager.GetImageNameByTaskID(node.TaskID)
+	if err != nil {
+		return err
+	}
 
 	config := &container.Config{
 		Image: image,
@@ -51,8 +53,6 @@ func (dc *DockerClient) RunContainer(image string) error {
 	if _, err := dc.client.ContainerStart(ctx, resp.ID, startOptions); err != nil {
 		return err
 	}
-
-	dc.running = append(dc.running, resp.ID)
 
 	logsOptions := client.ContainerLogsOptions{
 		ShowStdout: true,
@@ -92,31 +92,7 @@ func (dc *DockerClient) RunContainer(image string) error {
 		if _, err := dc.client.ContainerRemove(ctx, resp.ID, removeOptions); err != nil {
 			return err
 		}
-		dc.running = slices.DeleteFunc(dc.running, func(id string) bool {
-			return id == resp.ID
-		})
 	}
 
 	return nil
-}
-
-func (dc *DockerClient) Cleanup() {
-	ctx := context.Background()
-
-	for _, containerID := range dc.running {
-		timeout := 10
-		stopOptions := client.ContainerStopOptions{
-			Timeout: &timeout,
-		}
-		if _, err := dc.client.ContainerStop(ctx, containerID, stopOptions); err != nil {
-			continue
-		}
-
-		removeOptions := client.ContainerRemoveOptions{
-			Force: true,
-		}
-		if _, err := dc.client.ContainerRemove(ctx, containerID, removeOptions); err != nil {
-			continue
-		}
-	}
 }

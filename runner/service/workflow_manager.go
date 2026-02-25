@@ -12,7 +12,6 @@ import (
 type WorkflowManager struct {
 	workflowRepo    model.WorkflowRepository
 	workflowRunRepo model.WorkflowRunRepository
-	taskRepo        model.TaskRepository
 }
 
 func NewWorkflowRunner() *WorkflowManager {
@@ -25,7 +24,6 @@ func NewWorkflowRunner() *WorkflowManager {
 	return &WorkflowManager{
 		workflowRepo:    json.NewJSONWorkflowRepository(jsonRepo),
 		workflowRunRepo: json.NewJSONWorkflowRunRepository(jsonRepo),
-		taskRepo:        json.NewJSONTaskRepository(jsonRepo),
 	}
 }
 
@@ -61,12 +59,4 @@ func (wm *WorkflowManager) GetWorkflowByID(id string) (model.Workflow, error) {
 func (wm *WorkflowManager) SaveWorkflowRun(run model.WorkflowRun) error {
 	_, err := wm.workflowRunRepo.CreateWorkflowRun(run)
 	return err
-}
-
-func (wm *WorkflowManager) GetImageNameByTaskID(taskID string) (string, error) {
-	task, err := wm.taskRepo.GetTaskByID(taskID)
-	if err != nil {
-		return "", err
-	}
-	return task.ImageName, nil
 }
