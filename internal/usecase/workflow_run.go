@@ -43,6 +43,12 @@ func (uc *workflowRunUseCase) RunWorkflow(workflowID string, runnerSelector func
 		return err
 	}
 
+	run := domain.WorkflowRun{
+		ID:         uc.idGenerator.GenerateID(),
+		WorkflowID: workflow.ID,
+		StartTime:  time.Now(),
+	}
+
 	nodes := make(map[string]*NodeRun)
 	for _, node := range workflow.Nodes {
 		nodes[node.Name] = &NodeRun{
@@ -86,10 +92,20 @@ func (uc *workflowRunUseCase) RunWorkflow(workflowID string, runnerSelector func
 	}
 
 	wg.Wait()
+	run.EndTime = time.Now()
 	for _, nodeRun := range nodes {
 		if nodeRun.err != nil {
-			return  fmt.Errorf("workflow run failed due to node error: %s error: %w", nodeRun.node.Name, nodeRun.err)
+			run.Status = domain.WorkflowStatusFailed
+			if _, err := uc.workflowRunRepo.CreateWorkflowRun(run); err != nil {
+				return err
+			}
+			return fmt.Errorf("workflow run failed due to node error: %s error: %w", nodeRun.node.Name, nodeRun.err)
 		}
+	}
+
+	run.Status = domain.WorkflowStatusCompleted
+	if _, err := uc.workflowRunRepo.CreateWorkflowRun(run); err != nil {
+		return err
 	}
 
 	return nil
