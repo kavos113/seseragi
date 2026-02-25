@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/kavos113/seseragi/internal/domain"
 )
 
@@ -16,11 +15,13 @@ type WorkflowUseCase interface {
 
 type workflowUseCase struct {
 	workflowRepo domain.WorkflowRepository
+	idGenerator  IDGenerator
 }
 
-func NewWorkflowUseCase(workflowRepo domain.WorkflowRepository) WorkflowUseCase {
+func NewWorkflowUseCase(workflowRepo domain.WorkflowRepository, idGenerator IDGenerator) WorkflowUseCase {
 	return &workflowUseCase{
 		workflowRepo: workflowRepo,
+		idGenerator:  idGenerator,
 	}
 }
 
@@ -32,7 +33,7 @@ func (uc *workflowUseCase) AddWorkflow(workflow domain.Workflow) error {
 		return err
 	}
 
-	id := uuid.New().String()
+	id := uc.idGenerator.GenerateID()
 	workflow.ID = id
 	if _, err := uc.workflowRepo.CreateWorkflow(workflow); err != nil {
 		return err

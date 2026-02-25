@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"github.com/google/uuid"
 	"github.com/kavos113/seseragi/internal/domain"
 )
 
@@ -14,17 +13,19 @@ type TaskUseCase interface {
 type taskUseCase struct {
 	taskRepo     domain.TaskRepository
 	taskProvider domain.TaskProvider
+	idGenerator  IDGenerator
 }
 
-func NewTaskUseCase(taskRepo domain.TaskRepository, taskProvider domain.TaskProvider) TaskUseCase {
+func NewTaskUseCase(taskRepo domain.TaskRepository, taskProvider domain.TaskProvider, idGenerator IDGenerator) TaskUseCase {
 	return &taskUseCase{
 		taskRepo:     taskRepo,
 		taskProvider: taskProvider,
+		idGenerator:  idGenerator,
 	}
 }
 
 func (uc *taskUseCase) AddTask(task domain.Task) error {
-	id := uuid.New().String()
+	id := uc.idGenerator.GenerateID()
 	task.ID = id
 	if err := uc.taskProvider.BuildTask(task); err != nil {
 		return err
