@@ -35,6 +35,7 @@ func (c CommandTaskDefinition) Type() TaskType {
 	return TaskTypeCommand
 }
 
+// taskの永続化
 type TaskRepository interface {
 	CreateTask(task Task) (Task, error)
 	GetTaskByID(id string) (Task, error)
@@ -43,4 +44,9 @@ type TaskRepository interface {
 
 	UpdateTask(task Task) (Task, error)
 	DeleteTask(id string) error
+}
+
+// コンテナのビルドやデータの準備など
+type TaskProvider interface {
+	BuildTask(task Task) error
 }
