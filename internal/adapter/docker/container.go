@@ -11,15 +11,27 @@ import (
 	"github.com/moby/moby/client"
 )
 
-func (c *Client) RunContainer(image string) error {
+func (c *Client) RunContainer(image string, dataDir string) error {
+	const containerDataDir = "/data"
+
 	ctx := context.Background()
 
 	config := &container.Config{
 		Image: image,
+		Env: []string{
+			fmt.Sprintf("WORKFLOW_INPUT_PATH=%s/input.json", containerDataDir),
+			fmt.Sprintf("WORKFLOW_OUTPUT_PATH=%s/output.json", containerDataDir),
+		},
+	}
+	hostConfig := &container.HostConfig{
+		Binds: []string{
+			fmt.Sprintf("%s:%s", dataDir, containerDataDir),
+		},
 	}
 
 	createOptions := client.ContainerCreateOptions{
-		Config: config,
+		Config:     config,
+		HostConfig: hostConfig,
 	}
 
 	resp, err := c.client.ContainerCreate(ctx, createOptions)

@@ -107,7 +107,7 @@ func (uc *workflowRunUseCase) RunWorkflow(workflowID string, runnerSelector func
 				nr.err = fmt.Errorf("failed to get task for node %s: %w", nr.node.Name, err)
 				return
 			}
-			nr.err = nr.runner.Run(nr.node, task)
+			nr.err = nr.runner.Run(nr.node, task, run.ID)
 		}(nodeRun)
 	}
 

@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"time"
 
@@ -21,7 +22,7 @@ func NewCommandTaskRunner(timeout time.Duration) *CommandTaskRunner {
 	}
 }
 
-func (r *CommandTaskRunner) Run(node domain.Node, task domain.Task) error {
+func (r *CommandTaskRunner) Run(node domain.Node, task domain.Task, workflowRunID string) error {
 	commandDef, ok := task.TaskDef.(domain.CommandTaskDefinition)
 	if !ok {
 		return nil // or return an error indicating invalid task definition
@@ -40,6 +41,10 @@ func (r *CommandTaskRunner) Run(node domain.Node, task domain.Task) error {
 		return fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
 	}
 	cmd.Dir = commandDef.WorkingDir
+
+	dataDir := domain.GetDataDir(workflowRunID)
+	cmd.Env = append(cmd.Env, fmt.Sprintf("WORKFLOW_INPUT_PATH=%s", filepath.Join(dataDir, domain.GetNodeInputPath(node.Name))))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("WORKFLOW_OUTPUT_PATH=%s", filepath.Join(dataDir, domain.GetNodeOutputPath(node.Name))))
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer

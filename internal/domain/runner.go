@@ -7,7 +7,7 @@ import (
 )
 
 type NodeRunner interface {
-	Run(node Node, task Task) error
+	Run(node Node, task Task, workflowRunID string) error
 }
 
 func GetDataDir(workflowRunID string) string {
