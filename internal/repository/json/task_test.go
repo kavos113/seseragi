@@ -29,6 +29,48 @@ func TestCreateTask(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "success: docker task",
+			task: domain.Task{
+				ID:   "2",
+				Name: "Docker Task",
+				TaskDef: domain.DockerTaskDefinition{
+					ImageName:  "nginx:latest",
+					ContextDir: "/path/to/context",
+				},
+			},
+			existing: nil,
+			expected: domain.Task{
+				ID:   "2",
+				Name: "Docker Task",
+				TaskDef: domain.DockerTaskDefinition{
+					ImageName:  "nginx:latest",
+					ContextDir: "/path/to/context",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "success: command task",
+			task: domain.Task{
+				ID:   "3",
+				Name: "Command Task",
+				TaskDef: domain.CommandTaskDefinition{
+					Command:    "echo Hello World",
+					WorkingDir: "/path/to/working/dir",
+				},
+			},
+			existing: nil,
+			expected: domain.Task{
+				ID:   "3",
+				Name: "Command Task",
+				TaskDef: domain.CommandTaskDefinition{
+					Command:    "echo Hello World",
+					WorkingDir: "/path/to/working/dir",
+				},
+			},
+			wantErr: false,
+		},
+		{
 			name: "failure: task with same ID already exists",
 			task: domain.Task{
 				ID:   "1",
@@ -105,6 +147,52 @@ func TestGetTaskByID(t *testing.T) {
 			expected: domain.Task{
 				ID:   "1",
 				Name: "Task 1",
+			},
+			wantErr: false,
+		},
+		{
+			name: "success: docker task",
+			existing: []domain.Task{
+				{
+					ID:   "2",
+					Name: "Docker Task",
+					TaskDef: domain.DockerTaskDefinition{
+						ImageName:  "nginx:latest",
+						ContextDir: "/path/to/context",
+					},
+				},
+			},
+			id: "2",
+			expected: domain.Task{
+				ID:   "2",
+				Name: "Docker Task",
+				TaskDef: domain.DockerTaskDefinition{
+					ImageName:  "nginx:latest",
+					ContextDir: "/path/to/context",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "success: command task",
+			existing: []domain.Task{
+				{
+					ID:   "3",
+					Name: "Command Task",
+					TaskDef: domain.CommandTaskDefinition{
+						Command:    "echo Hello World",
+						WorkingDir: "/path/to/working/dir",
+					},
+				},
+			},
+			id: "3",
+			expected: domain.Task{
+				ID:   "3",
+				Name: "Command Task",
+				TaskDef: domain.CommandTaskDefinition{
+					Command:    "echo Hello World",
+					WorkingDir: "/path/to/working/dir",
+				},
 			},
 			wantErr: false,
 		},
@@ -289,6 +377,66 @@ func TestUpdateTask(t *testing.T) {
 			expected: domain.Task{
 				ID:   "1",
 				Name: "Updated Task 1",
+			},
+			wantErr: false,
+		},
+		{
+			name: "success: docker task",
+			existing: []domain.Task{
+				{
+					ID:   "2",
+					Name: "Docker Task",
+					TaskDef: domain.DockerTaskDefinition{
+						ImageName:  "nginx:latest",
+						ContextDir: "/path/to/context",
+					},
+				},
+			},
+			taskToUpdate: domain.Task{
+				ID:   "2",
+				Name: "Updated Docker Task",
+				TaskDef: domain.DockerTaskDefinition{
+					ImageName:  "nginx:latest",
+					ContextDir: "/path/to/context",
+				},
+			},
+			expected: domain.Task{
+				ID:   "2",
+				Name: "Updated Docker Task",
+				TaskDef: domain.DockerTaskDefinition{
+					ImageName:  "nginx:latest",
+					ContextDir: "/path/to/context",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "success: command task",
+			existing: []domain.Task{	
+				{
+					ID:   "3",
+					Name: "Command Task",
+					TaskDef: domain.CommandTaskDefinition{
+						Command:    "echo Hello World",
+						WorkingDir: "/path/to/working/dir",
+					},
+				},
+			},
+			taskToUpdate: domain.Task{
+				ID:   "3",
+				Name: "Updated Command Task",
+				TaskDef: domain.CommandTaskDefinition{
+					Command:    "echo Hello World",
+					WorkingDir: "/path/to/working/dir",
+				},
+			},
+			expected: domain.Task{
+				ID:   "3",
+				Name: "Updated Command Task",
+				TaskDef: domain.CommandTaskDefinition{
+					Command:    "echo Hello World",
+					WorkingDir: "/path/to/working/dir",
+				},
 			},
 			wantErr: false,
 		},
