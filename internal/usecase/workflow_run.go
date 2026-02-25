@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -77,7 +78,7 @@ func (uc *workflowRunUseCase) RunWorkflow(workflowID string, runnerSelector func
 	if err := os.MkdirAll(dataDir, 0755); err != nil {
 		return fmt.Errorf("failed to create data directory: %w", err)
 	}
-	defer os.RemoveAll(dataDir)
+	// defer os.RemoveAll(dataDir)
 
 	var wg sync.WaitGroup
 	wg.Add(len(nodes))
@@ -96,7 +97,7 @@ func (uc *workflowRunUseCase) RunWorkflow(workflowID string, runnerSelector func
 				}
 			}
 
-			if err := uc.collectOutputs(nr); err != nil {
+			if err := uc.collectOutputs(nr, run.ID); err != nil {
 				nr.err = fmt.Errorf("failed to collect outputs for node %s: %w", nr.node.Name, err)
 				return
 			}
@@ -139,11 +140,11 @@ type NodeData struct {
 type InputData []NodeData
 
 // _output.json を結合して _input.json を作る. すべてのdependsOnが成功していることが前提
-func (uc *workflowRunUseCase) collectOutputs(noderun *NodeRun) error {
+func (uc *workflowRunUseCase) collectOutputs(noderun *NodeRun, runID string) error {
 	inputData := InputData{}
 
 	for _, dep := range noderun.dependsOn {
-		outputPath := domain.GetNodeOutputPath(dep.node.Name)
+		outputPath := filepath.Join(domain.GetDataDir(runID), domain.GetNodeOutputPath(dep.node.Name))
 
 		outBytes, err := os.ReadFile(outputPath)
 		if err != nil {
@@ -161,7 +162,7 @@ func (uc *workflowRunUseCase) collectOutputs(noderun *NodeRun) error {
 		return fmt.Errorf("failed to marshal input data for node %s: %w", noderun.node.Name, err)
 	}
 
-	inputPath := domain.GetNodeInputPath(noderun.node.Name)
+	inputPath := filepath.Join(domain.GetDataDir(runID), domain.GetNodeInputPath(noderun.node.Name))
 	if err := os.WriteFile(inputPath, inputBytes, 0644); err != nil {
 		return fmt.Errorf("failed to write input file for node %s: %w", noderun.node.Name, err)
 	}

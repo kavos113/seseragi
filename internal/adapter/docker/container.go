@@ -6,12 +6,13 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/kavos113/seseragi/internal/domain"
 	"github.com/moby/moby/api/pkg/stdcopy"
 	"github.com/moby/moby/api/types/container"
 	"github.com/moby/moby/client"
 )
 
-func (c *Client) RunContainer(image string, dataDir string) error {
+func (c *Client) RunContainer(image string, dataDir string, nodeName string) error {
 	const containerDataDir = "/data"
 
 	ctx := context.Background()
@@ -19,8 +20,8 @@ func (c *Client) RunContainer(image string, dataDir string) error {
 	config := &container.Config{
 		Image: image,
 		Env: []string{
-			fmt.Sprintf("WORKFLOW_INPUT_PATH=%s/input.json", containerDataDir),
-			fmt.Sprintf("WORKFLOW_OUTPUT_PATH=%s/output.json", containerDataDir),
+			fmt.Sprintf("WORKFLOW_INPUT_PATH=%s", fmt.Sprintf("%s/%s", containerDataDir, domain.GetNodeInputPath(nodeName))),
+			fmt.Sprintf("WORKFLOW_OUTPUT_PATH=%s", fmt.Sprintf("%s/%s", containerDataDir, domain.GetNodeOutputPath(nodeName))),
 		},
 	}
 	hostConfig := &container.HostConfig{

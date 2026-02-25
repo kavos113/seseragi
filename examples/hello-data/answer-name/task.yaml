@@ -1,3 +1,4 @@
 name: answer-name
 description: "Answer the user's name"
+type: docker
 context: .

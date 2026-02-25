@@ -21,7 +21,7 @@ func (r *DockerNodeRunner) Run(node domain.Node, task domain.Task, workflowRunID
 		return errors.New("invalid task definition type for DockerNodeRunner")
 	}
 
-	if err := r.client.RunContainer(dockerDef.ImageName, domain.GetDataDir(workflowRunID)); err != nil {
+	if err := r.client.RunContainer(dockerDef.ImageName, domain.GetDataDir(workflowRunID), node.Name); err != nil {
 		return err
 	}
 

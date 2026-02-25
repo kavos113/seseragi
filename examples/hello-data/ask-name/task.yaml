@@ -1,3 +1,4 @@
 name: ask-name
 description: "Ask for the user's name"
+type: docker
 context: .

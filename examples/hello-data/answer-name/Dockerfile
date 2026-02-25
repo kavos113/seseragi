@@ -5,7 +5,6 @@ WORKDIR /app
 COPY ./main.go ./go.mod /app/
 COPY ./vendor/ /app/vendor/
 
-RUN go mod tidy
 RUN go build -mod=vendor -o main main.go
 
 FROM alpine:latest
