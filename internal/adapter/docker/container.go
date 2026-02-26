@@ -41,7 +41,7 @@ func (c *Client) RunContainer(image string, dataDir string, nodeName string) err
 	}
 
 	waitOptions := client.ContainerWaitOptions{
-		Condition: container.WaitConditionNotRunning,
+		Condition: container.WaitConditionNextExit,
 	}
 	waitResp := c.client.ContainerWait(ctx, resp.ID, waitOptions)
 
@@ -73,11 +73,13 @@ func (c *Client) RunContainer(image string, dataDir string, nodeName string) err
 
 	select {
 	case err := <-waitResp.Error:
+		fmt.Printf("Error waiting for container %s: %v\n", resp.ID, err)
 		if err != nil {
 			return err
 		}
 
 	case status := <-waitResp.Result:
+		fmt.Printf("Container %s exited with status code %d\n", resp.ID, status.StatusCode)
 		if status.StatusCode != 0 {
 			return errors.New("container exited with non-zero status")
 		}
@@ -89,6 +91,8 @@ func (c *Client) RunContainer(image string, dataDir string, nodeName string) err
 			return err
 		}
 	}
+
+	fmt.Printf("Container %s finished\n", resp.ID)
 
 	return nil
 }

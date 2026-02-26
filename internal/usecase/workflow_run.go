@@ -91,18 +91,20 @@ func (uc *workflowRunUseCase) RunWorkflow(workflowID string, runnerSelector func
 			for _, dep := range nr.dependsOn {
 				<-dep.doneCh
 
+				fmt.Printf("Node %s dependency %s done\n", nr.node.Name, dep.node.Name)
+
 				if dep.err != nil {
 					nr.err = errors.New("dependency failed: " + dep.node.Name)
 					return
 				}
 			}
+			fmt.Printf("Running node: %s\n", nr.node.Name)
 
 			if err := uc.collectOutputs(nr, run.ID); err != nil {
 				nr.err = fmt.Errorf("failed to collect outputs for node %s: %w", nr.node.Name, err)
 				return
 			}
 
-			fmt.Printf("Running node: %s\n", nr.node.Name)
 			task, err := uc.taskRepo.GetTaskByName(nr.node.TaskName)
 			if err != nil {
 				nr.err = fmt.Errorf("failed to get task for node %s: %w", nr.node.Name, err)
@@ -145,6 +147,10 @@ func (uc *workflowRunUseCase) collectOutputs(noderun *NodeRun, runID string) err
 
 	for _, dep := range noderun.dependsOn {
 		outputPath := filepath.Join(domain.GetDataDir(runID), domain.GetNodeOutputPath(dep.node.Name))
+
+		if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+			continue
+		}
 
 		outBytes, err := os.ReadFile(outputPath)
 		if err != nil {
