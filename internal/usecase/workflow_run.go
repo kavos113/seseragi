@@ -170,10 +170,8 @@ func (uc *workflowRunUseCase) collectOutputs(noderun *NodeRun, runID string) err
 	return nil
 }
 
-// interval: 1 hour
 func (uc *workflowRunUseCase) GetWorkflowsToRun() ([]domain.Workflow, error) {
 	now := time.Now()
-	limit := now.Add(-1 * time.Hour)
 
 	workflows, err := uc.workflowRepo.GetAllWorkflows()
 	if err != nil {
@@ -182,6 +180,7 @@ func (uc *workflowRunUseCase) GetWorkflowsToRun() ([]domain.Workflow, error) {
 
 	var toRun []domain.Workflow
 	for _, wf := range workflows {
+		limit := now.Add(-wf.RunInterval)
 		runs, err := uc.workflowRunRepo.GetWorkflowRunsAfter(wf.ID, limit)
 		if err != nil {
 			return nil, err
