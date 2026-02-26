@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	seseragi "github.com/kavos113/seseragi/sdk/golang"
 )
@@ -16,6 +17,8 @@ func askName(d seseragi.InputData) (seseragi.Empty, error) {
 		return seseragi.Empty{}, err
 	}
 	fmt.Printf("Question: %s\n", message.Question)
+
+	fmt.Printf("env var: %s\n", os.Getenv("EXAMPLE_ENV_VAR"))
 
 	return seseragi.Empty{}, nil
 }
