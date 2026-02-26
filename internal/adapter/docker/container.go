@@ -12,17 +12,21 @@ import (
 	"github.com/moby/moby/client"
 )
 
-func (c *Client) RunContainer(image string, dataDir string, nodeName string) error {
+func (c *Client) RunContainer(image string, dataDir string, nodeName string, envVars map[string]string) error {
 	const containerDataDir = "/data"
 
 	ctx := context.Background()
 
+	envs := []string{}
+	for key, value := range envVars {
+		envs = append(envs, fmt.Sprintf("%s=%s", key, value))
+	}
+	envs = append(envs, fmt.Sprintf("WORKFLOW_INPUT_PATH=%s", fmt.Sprintf("%s/%s", containerDataDir, domain.GetNodeInputPath(nodeName))))
+	envs = append(envs, fmt.Sprintf("WORKFLOW_OUTPUT_PATH=%s", fmt.Sprintf("%s/%s", containerDataDir, domain.GetNodeOutputPath(nodeName))))
+
 	config := &container.Config{
 		Image: image,
-		Env: []string{
-			fmt.Sprintf("WORKFLOW_INPUT_PATH=%s", fmt.Sprintf("%s/%s", containerDataDir, domain.GetNodeInputPath(nodeName))),
-			fmt.Sprintf("WORKFLOW_OUTPUT_PATH=%s", fmt.Sprintf("%s/%s", containerDataDir, domain.GetNodeOutputPath(nodeName))),
-		},
+		Env:   envs,
 	}
 	hostConfig := &container.HostConfig{
 		Binds: []string{

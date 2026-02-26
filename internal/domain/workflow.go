@@ -9,6 +9,7 @@ type Node struct {
 	Name         string
 	TaskName     string
 	Dependencies []string // Nameのリスト
+	Environments map[string]string
 }
 
 func GetNodeInputPath(nodeName string) string {

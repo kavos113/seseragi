@@ -8,8 +8,9 @@ import (
 )
 
 type nodeInfo struct {
-	Name         string   `yaml:"name"`
-	Dependencies []string `yaml:"dependencies"`
+	Name         string            `yaml:"name"`
+	Dependencies []string          `yaml:"dependencies"`
+	Environments map[string]string `yaml:"environments,omitempty"`
 }
 
 type triggerInfo struct {
@@ -38,6 +39,7 @@ func LoadWorkflowInfoFromYAML(yamlData []byte, yamlPath string) (*domain.Workflo
 			Name:         name,
 			TaskName:     node.Name,
 			Dependencies: node.Dependencies,
+			Environments: node.Environments,
 		})
 	}
 

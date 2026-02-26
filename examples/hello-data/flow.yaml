@@ -13,4 +13,4 @@ nodes:
     dependencies:
       - ask-name
     environments:
-      - EXAMPLE_ENV_VAR: "Hello, Seseragi!"
+      EXAMPLE_ENV_VAR: "Hello, Seseragi!"

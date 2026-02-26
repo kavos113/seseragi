@@ -51,6 +51,8 @@ nodes:
     name: "go-world"
     dependencies:
       - go-hello
+    environments:
+      VAR1: value1
 `),
 			yamlPath: "flow.yaml",
 			want: &domain.Workflow{
@@ -64,6 +66,7 @@ nodes:
 						Name:         "go-world",
 						TaskName:     "go-world",
 						Dependencies: []string{"go-hello"},
+						Environments: map[string]string{"VAR1": "value1"},
 					},
 				},
 				YamlPath: "flow.yaml",
