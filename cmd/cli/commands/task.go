@@ -27,21 +27,20 @@ func (c *Commands) AddTask(yamlPath string) error {
 		return err
 	}
 
-	providerSelector := func(taskDef domain.TaskDefinition) domain.TaskProvider {
-		switch taskDef.Type() {
-		case domain.TaskTypeDocker:
-			return c.dp
+	var provider domain.TaskProvider
+	switch task.TaskDef.Type() {
+	case domain.TaskTypeDocker:
+		provider = c.dp
 
-		case domain.TaskTypeCommand:
-			return command.NewCommandTaskProvider()
+	case domain.TaskTypeCommand:
+		provider = command.NewCommandTaskProvider()
 
-		default:
-			fmt.Printf("No provider available for task type %s in task definition\n", taskDef.Type())
-			return nil
-		}
+	default:
+		fmt.Printf("No provider available for task type %s in task definition\n", task.TaskDef.Type())
+		return errors.New("unsupported task type")
 	}
 
-	err = c.tu.AddTask(*task, providerSelector)
+	err = c.tu.AddTask(*task, provider)
 	if err != nil {
 		return err
 	}

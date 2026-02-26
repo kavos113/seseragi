@@ -84,16 +84,14 @@ func TestAddTask(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockRepo := mock_domain.NewMockTaskRepository(ctrl)
+			mockProvider := mock_domain.NewMockTaskProvider(ctrl)
 			mockIDGen := newTestIDGenerator("generated-id")
 
 			tt.setupMock(mockRepo)
+			tt.setupProvider(mockProvider)
 
 			uc := NewTaskUseCase(mockRepo, mockIDGen)
-			err := uc.AddTask(tt.task, func(taskDef domain.TaskDefinition) domain.TaskProvider {
-				mockProvider := mock_domain.NewMockTaskProvider(ctrl)
-				tt.setupProvider(mockProvider)
-				return mockProvider
-			})
+			err := uc.AddTask(tt.task, mockProvider)
 			if err != nil {
 				if !tt.wantErr {
 					t.Errorf("AddTask() error = %v, wantErr %v", err, tt.wantErr)

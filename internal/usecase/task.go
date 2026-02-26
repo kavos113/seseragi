@@ -5,7 +5,8 @@ import (
 )
 
 type TaskUseCase interface {
-	AddTask(task domain.Task, providerSelector func(domain.TaskDefinition) domain.TaskProvider) error
+	AddTask(task domain.Task, provider domain.TaskProvider) error
+	UpdateTask(task domain.Task, provider domain.TaskProvider) error
 	ListTasks() ([]domain.Task, error)
 	DeleteTask(taskID string) error
 }
@@ -22,7 +23,7 @@ func NewTaskUseCase(taskRepo domain.TaskRepository, idGenerator IDGenerator) Tas
 	}
 }
 
-func (uc *taskUseCase) AddTask(task domain.Task, providerSelector func(domain.TaskDefinition) domain.TaskProvider) error {
+func (uc *taskUseCase) AddTask(task domain.Task, provider domain.TaskProvider) error {
 	id := uc.idGenerator.GenerateID()
 	task.ID = id
 
@@ -33,12 +34,32 @@ func (uc *taskUseCase) AddTask(task domain.Task, providerSelector func(domain.Ta
 		}
 	}
 
-	provider := providerSelector(task.TaskDef)
 	if err := provider.BuildTask(task); err != nil {
 		return err
 	}
 
 	_, err := uc.taskRepo.CreateTask(task)
+	return err
+}
+
+func (uc *taskUseCase) UpdateTask(task domain.Task, provider domain.TaskProvider) error {
+	existingTask, err := uc.taskRepo.GetTaskByID(task.ID)
+	if err != nil {
+		return err
+	}
+
+	if dockerDef, ok := task.TaskDef.(domain.DockerTaskDefinition); ok {
+		task.TaskDef = domain.DockerTaskDefinition{
+			ImageName:  existingTask.ID,
+			ContextDir: dockerDef.ContextDir,
+		}
+	}
+
+	if err := provider.BuildTask(task); err != nil {
+		return err
+	}
+	
+	_, err = uc.taskRepo.UpdateTask(task)
 	return err
 }
 
