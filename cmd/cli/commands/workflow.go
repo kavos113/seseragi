@@ -32,6 +32,31 @@ func (c *Commands) AddWorkflow(yamlPath string) error {
 	return nil
 }
 
+func (c *Commands) UpdateWorkflow(yamlPath string) error {
+	absPath, err := filepath.Abs(yamlPath)
+	if err != nil {
+		return err
+	}
+
+	yamlData, err := os.ReadFile(absPath)
+	if err != nil {
+		return err
+	}
+
+	workflow, err := yaml.LoadWorkflowInfoFromYAML(yamlData, absPath)
+	if err != nil {
+		return err
+	}
+
+	updated, err := c.wu.UpdateWorkflow(*workflow)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Workflow '%s' updated successfully with ID: %s\n", workflow.Name, updated.ID)
+	return nil
+}
+
 func (c *Commands) ListWorkflows() error {
 	workflows, err := c.wu.ListWorkflows()
 	if err != nil {

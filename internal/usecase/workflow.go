@@ -10,6 +10,7 @@ import (
 
 type WorkflowUseCase interface {
 	AddWorkflow(workflow domain.Workflow) (domain.Workflow, error)
+	UpdateWorkflow(workflow domain.Workflow) (domain.Workflow, error)
 	ListWorkflows() ([]domain.Workflow, error)
 	DeleteWorkflow(workflowID string) error
 	GetTaskTypeFromNode(node domain.Node) (domain.TaskType, error)
@@ -47,6 +48,27 @@ func (uc *workflowUseCase) AddWorkflow(workflow domain.Workflow) (domain.Workflo
 	id := uc.idGenerator.GenerateID()
 	workflow.ID = id
 	if _, err := uc.workflowRepo.CreateWorkflow(workflow); err != nil {
+		return domain.Workflow{}, err
+	}
+	return workflow, nil
+}
+
+func (uc *workflowUseCase) UpdateWorkflow(workflow domain.Workflow) (domain.Workflow, error) {
+	if err := checkCircularDependency(workflow.Nodes); err != nil {
+		return domain.Workflow{}, err
+	}
+	if err := checkMissingDependency(workflow.Nodes); err != nil {
+		return domain.Workflow{}, err
+	}
+
+	for _, node := range workflow.Nodes {
+		_, err := uc.taskRepo.GetTaskByName(node.TaskName)
+		if err != nil {
+			return domain.Workflow{}, fmt.Errorf("%w: node %s references missing task %s", ErrWorkflowMissingTask, node.Name, node.TaskName)
+		}
+	}
+
+	if _, err := uc.workflowRepo.UpdateWorkflow(workflow); err != nil {
 		return domain.Workflow{}, err
 	}
 	return workflow, nil
