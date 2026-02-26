@@ -77,7 +77,7 @@ func (c *Commands) DeleteWorkflow(workflowID string) error {
 func (c *Commands) HandleWorkflowCommand(args []string) error {
 	if len(args) < 1 {
 		fmt.Println("Usage: seseragi workflow <subcommand>")
-		fmt.Println("  Subcommands: add, list, delete")
+		fmt.Println("  Subcommands: add, update, list, delete")
 		return fmt.Errorf("missing subcommand for workflow")
 	}
 
@@ -88,6 +88,13 @@ func (c *Commands) HandleWorkflowCommand(args []string) error {
 			return fmt.Errorf("missing yaml path for adding workflow")
 		}
 		return c.AddWorkflow(args[1])
+
+	case "update":
+		if len(args) < 2 {
+			fmt.Println("Usage: seseragi workflow update <yaml_path>")
+			return fmt.Errorf("missing yaml path for updating workflow")
+		}
+		return c.UpdateWorkflow(args[1])
 
 	case "list":
 		return c.ListWorkflows()
@@ -102,7 +109,7 @@ func (c *Commands) HandleWorkflowCommand(args []string) error {
 	default:
 		fmt.Printf("Unknown subcommand: %s\n", args[0])
 		fmt.Println("Usage: seseragi workflow <subcommand>")
-		fmt.Println("  Subcommands: add, list, delete")
+		fmt.Println("  Subcommands: add, update, list, delete")
 		return fmt.Errorf("unknown subcommand for workflow: %s", args[0])
 	}
 }

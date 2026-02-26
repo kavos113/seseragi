@@ -107,7 +107,7 @@ func (c *Commands) DeleteTask(taskID string) error {
 func (c *Commands) HandleTaskCommand(args []string) error {
 	if len(args) < 1 {
 		fmt.Println("Usage: seseragi task <subcommand>")
-		fmt.Println("  Subcommands: add, list, delete")
+		fmt.Println("  Subcommands: add, update, list, delete")
 		return errors.New("missing subcommand for task")
 	}
 
@@ -118,6 +118,13 @@ func (c *Commands) HandleTaskCommand(args []string) error {
 			return errors.New("missing yaml path for adding task")
 		}
 		return c.AddTask(args[1])
+
+	case "update":
+		if len(args) < 2 {
+			fmt.Println("Usage: seseragi task update <yaml_path>")
+			return errors.New("missing yaml path for updating task")
+		}
+		return c.UpdateTask(args[1])
 
 	case "list":
 		return c.ListTasks()
@@ -132,7 +139,7 @@ func (c *Commands) HandleTaskCommand(args []string) error {
 	default:
 		fmt.Printf("Unknown subcommand for task: %s\n", args[0])
 		fmt.Println("Usage: seseragi task <subcommand>")
-		fmt.Println("  Subcommands: add, list, delete")
+		fmt.Println("  Subcommands: add, update, list, delete")
 		return fmt.Errorf("unknown subcommand for task: %s", args[0])
 	}
 }
