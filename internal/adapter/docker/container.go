@@ -5,6 +5,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/kavos113/seseragi/internal/domain"
 	"github.com/moby/moby/api/pkg/stdcopy"
@@ -13,6 +16,21 @@ import (
 )
 
 func (c *Client) RunContainer(image string, dataDir string, nodeName string, envVars map[string]string) error {
+	confDir, err := os.UserConfigDir()
+	if err != nil {
+		return err
+	}
+	logDir := filepath.Join(confDir, "seseragi", "logs")
+	if err := os.MkdirAll(logDir, 0755); err != nil {
+		return err
+	}
+	logFilePath := filepath.Join(logDir, fmt.Sprintf("%s-%s.log", nodeName, time.Now().Format("20060102-150405")))
+	logFile, err := os.Create(logFilePath)
+	if err != nil {
+		return err
+	}
+	defer logFile.Close()
+
 	const containerDataDir = "/data"
 
 	ctx := context.Background()
@@ -73,6 +91,10 @@ func (c *Client) RunContainer(image string, dataDir string, nodeName string, env
 		}
 
 		fmt.Printf("Container %s logs:\nSTDOUT:\n%s\nSTDERR:\n%s\n", resp.ID, stdoutBuf.String(), stderrBuf.String())
+
+		if _, err := logFile.WriteString(fmt.Sprintf("STDOUT:\n%s\nSTDERR:\n%s\n", stdoutBuf.String(), stderrBuf.String())); err != nil {
+			return
+		}
 	}()
 
 	select {
