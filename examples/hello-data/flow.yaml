@@ -2,7 +2,8 @@ name: hello-data
 description: "A simple data example"
 
 trigger:
-  type: "manual"
+  type: "interval"
+  interval: 10
 
 nodes:
   ask-name:
