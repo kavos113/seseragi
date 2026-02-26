@@ -1,10 +1,16 @@
 package yaml
 
 import (
+	"os"
+	"regexp"
 	"time"
 
 	"github.com/kavos113/seseragi/internal/domain"
 	"go.yaml.in/yaml/v4"
+)
+
+var (
+	envVarRegex = regexp.MustCompile(`\$\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*\}`)
 )
 
 type nodeInfo struct {
@@ -27,8 +33,18 @@ type workflowInfo struct {
 
 // return ID, is empty
 func LoadWorkflowInfoFromYAML(yamlData []byte, yamlPath string) (*domain.Workflow, error) {
+	// environment variables
+	expandedYamlData := envVarRegex.ReplaceAllFunc(yamlData, func(match []byte) []byte {
+		envVar := envVarRegex.FindSubmatch(match)[1]
+		val := os.Getenv(string(envVar))
+		if val == "" {
+			return match // keep original if env var is not set
+		}
+		return []byte(val)
+	})
+
 	var workflowInfo workflowInfo
-	err := yaml.Unmarshal(yamlData, &workflowInfo)
+	err := yaml.Unmarshal(expandedYamlData, &workflowInfo)
 	if err != nil {
 		return nil, err
 	}
