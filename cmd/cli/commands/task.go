@@ -49,6 +49,44 @@ func (c *Commands) AddTask(yamlPath string) error {
 	return nil
 }
 
+func (c *Commands) UpdateTask(yamlPath string) error {
+	absPath, err := filepath.Abs(yamlPath)
+	if err != nil {
+		return err
+	}
+
+	yamlData, err := os.ReadFile(absPath)
+	if err != nil {
+		return err
+	}
+
+	task, err := yaml.LoadTaskInfoFromYAML(yamlData, absPath)
+	if err != nil {
+		return err
+	}
+
+	var provider domain.TaskProvider
+	switch task.TaskDef.Type() {
+	case domain.TaskTypeDocker:
+		provider = c.dp
+
+	case domain.TaskTypeCommand:
+		provider = command.NewCommandTaskProvider()
+
+	default:
+		fmt.Printf("No provider available for task type %s in task definition\n", task.TaskDef.Type())
+		return errors.New("unsupported task type")
+	}
+
+	err = c.tu.UpdateTask(*task, provider)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Task '%s' updated successfully with ID: %s\n", task.Name, task.ID)
+	return nil
+}
+
 func (c *Commands) ListTasks() error {
 	tasks, err := c.tu.ListTasks()
 	if err != nil {
