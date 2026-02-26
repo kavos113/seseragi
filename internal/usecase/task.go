@@ -43,7 +43,7 @@ func (uc *taskUseCase) AddTask(task domain.Task, provider domain.TaskProvider) e
 }
 
 func (uc *taskUseCase) UpdateTask(task domain.Task, provider domain.TaskProvider) error {
-	existingTask, err := uc.taskRepo.GetTaskByID(task.ID)
+	existingTask, err := uc.taskRepo.GetTaskByName(task.Name)
 	if err != nil {
 		return err
 	}
@@ -54,6 +54,7 @@ func (uc *taskUseCase) UpdateTask(task domain.Task, provider domain.TaskProvider
 			ContextDir: dockerDef.ContextDir,
 		}
 	}
+	task.ID = existingTask.ID
 
 	if err := provider.BuildTask(task); err != nil {
 		return err

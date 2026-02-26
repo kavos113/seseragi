@@ -54,6 +54,7 @@ func (c *Client) BuildImage(imageName string, contextDir string) error {
 		if err != nil {
 			return err
 		}
+		relPath = filepath.ToSlash(relPath)
 
 		for _, pattern := range excludes {
 			if strings.Contains(relPath, pattern) {

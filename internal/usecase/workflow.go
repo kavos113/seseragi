@@ -54,6 +54,11 @@ func (uc *workflowUseCase) AddWorkflow(workflow domain.Workflow) (domain.Workflo
 }
 
 func (uc *workflowUseCase) UpdateWorkflow(workflow domain.Workflow) (domain.Workflow, error) {
+	exsistingWorkflow, err := uc.workflowRepo.GetWorkflowByID(workflow.ID)
+	if err != nil {
+		return domain.Workflow{}, err
+	}
+
 	if err := checkCircularDependency(workflow.Nodes); err != nil {
 		return domain.Workflow{}, err
 	}
@@ -67,6 +72,7 @@ func (uc *workflowUseCase) UpdateWorkflow(workflow domain.Workflow) (domain.Work
 			return domain.Workflow{}, fmt.Errorf("%w: node %s references missing task %s", ErrWorkflowMissingTask, node.Name, node.TaskName)
 		}
 	}
+	workflow.ID = exsistingWorkflow.ID
 
 	if _, err := uc.workflowRepo.UpdateWorkflow(workflow); err != nil {
 		return domain.Workflow{}, err
