@@ -32,7 +32,7 @@ func (c *Commands) AddWorkflow(yamlPath string) error {
 	return nil
 }
 
-func (c *Commands) UpdateWorkflow(yamlPath string) error {
+func (c *Commands) UpdateWorkflow(yamlPath string, id string) error {
 	absPath, err := filepath.Abs(yamlPath)
 	if err != nil {
 		return err
@@ -48,6 +48,7 @@ func (c *Commands) UpdateWorkflow(yamlPath string) error {
 		return err
 	}
 
+	workflow.ID = id
 	updated, err := c.wu.UpdateWorkflow(*workflow)
 	if err != nil {
 		return err
@@ -90,11 +91,11 @@ func (c *Commands) HandleWorkflowCommand(args []string) error {
 		return c.AddWorkflow(args[1])
 
 	case "update":
-		if len(args) < 2 {
-			fmt.Println("Usage: seseragi workflow update <yaml_path>")
-			return fmt.Errorf("missing yaml path for updating workflow")
+		if len(args) < 3 {
+			fmt.Println("Usage: seseragi workflow update <yaml_path> <workflow_id>")
+			return fmt.Errorf("missing workflow ID for updating workflow")
 		}
-		return c.UpdateWorkflow(args[1])
+		return c.UpdateWorkflow(args[1], args[2])
 
 	case "list":
 		return c.ListWorkflows()
