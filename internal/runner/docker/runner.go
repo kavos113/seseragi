@@ -8,10 +8,10 @@ import (
 )
 
 type DockerNodeRunner struct {
-	client *docker.Client
+	client docker.DockerClient
 }
 
-func NewDockerNodeRunner(client *docker.Client) *DockerNodeRunner {
+func NewDockerNodeRunner(client docker.DockerClient) *DockerNodeRunner {
 	return &DockerNodeRunner{client: client}
 }
 

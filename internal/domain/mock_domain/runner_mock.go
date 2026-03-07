@@ -41,15 +41,15 @@ func (m *MockNodeRunner) EXPECT() *MockNodeRunnerMockRecorder {
 }
 
 // Run mocks base method.
-func (m *MockNodeRunner) Run(node domain.Node) error {
+func (m *MockNodeRunner) Run(node domain.Node, task domain.Task, workflowRunID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Run", node)
+	ret := m.ctrl.Call(m, "Run", node, task, workflowRunID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Run indicates an expected call of Run.
-func (mr *MockNodeRunnerMockRecorder) Run(node any) *gomock.Call {
+func (mr *MockNodeRunnerMockRecorder) Run(node, task, workflowRunID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockNodeRunner)(nil).Run), node)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockNodeRunner)(nil).Run), node, task, workflowRunID)
 }

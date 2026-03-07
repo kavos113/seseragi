@@ -8,10 +8,10 @@ import (
 )
 
 type DockerTaskProvider struct {
-	client *docker.Client
+	client docker.DockerClient
 }
 
-func NewDockerTaskProvider(client *docker.Client) *DockerTaskProvider {
+func NewDockerTaskProvider(client docker.DockerClient) *DockerTaskProvider {
 	return &DockerTaskProvider{client: client}
 }
 

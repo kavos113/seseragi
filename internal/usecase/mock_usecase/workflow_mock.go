@@ -69,6 +69,21 @@ func (mr *MockWorkflowUseCaseMockRecorder) DeleteWorkflow(workflowID any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteWorkflow", reflect.TypeOf((*MockWorkflowUseCase)(nil).DeleteWorkflow), workflowID)
 }
 
+// GetTaskTypeFromNode mocks base method.
+func (m *MockWorkflowUseCase) GetTaskTypeFromNode(node domain.Node) (domain.TaskType, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTaskTypeFromNode", node)
+	ret0, _ := ret[0].(domain.TaskType)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTaskTypeFromNode indicates an expected call of GetTaskTypeFromNode.
+func (mr *MockWorkflowUseCaseMockRecorder) GetTaskTypeFromNode(node any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTaskTypeFromNode", reflect.TypeOf((*MockWorkflowUseCase)(nil).GetTaskTypeFromNode), node)
+}
+
 // ListWorkflows mocks base method.
 func (m *MockWorkflowUseCase) ListWorkflows() ([]domain.Workflow, error) {
 	m.ctrl.T.Helper()
@@ -82,4 +97,19 @@ func (m *MockWorkflowUseCase) ListWorkflows() ([]domain.Workflow, error) {
 func (mr *MockWorkflowUseCaseMockRecorder) ListWorkflows() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListWorkflows", reflect.TypeOf((*MockWorkflowUseCase)(nil).ListWorkflows))
+}
+
+// UpdateWorkflow mocks base method.
+func (m *MockWorkflowUseCase) UpdateWorkflow(workflow domain.Workflow) (domain.Workflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateWorkflow", workflow)
+	ret0, _ := ret[0].(domain.Workflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateWorkflow indicates an expected call of UpdateWorkflow.
+func (mr *MockWorkflowUseCaseMockRecorder) UpdateWorkflow(workflow any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateWorkflow", reflect.TypeOf((*MockWorkflowUseCase)(nil).UpdateWorkflow), workflow)
 }
