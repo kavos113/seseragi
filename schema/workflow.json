@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Seseragi Workflow",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the workflow."
+    },
+    "description": {
+      "type": "string",
+      "description": "A brief description of the workflow."
+    },
+    "trigger": {
+      "type": "string",
+      "enum": [
+        "interval",
+        "manual"
+      ]
+    },
+    "nodes": {
+      "type": "object",
+      "description": "A mapping of node names to their definitions.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Task name to execute at this node."
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Names of nodes that must complete before this node can execute."
+            },
+            "description": "List of dependencies for this node."
+          },
+          "environments": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "description": "Environment variable name and value pairs."
+             },
+             "description": "Environment variables to set when executing this node."
+          }
+        }
+      }
+    }
+  }
+}
